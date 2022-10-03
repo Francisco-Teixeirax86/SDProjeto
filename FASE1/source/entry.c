@@ -1,5 +1,9 @@
 #include "entry.h"
 #include <stdio.h>
+#include "data.h"
+#include <string.h>
+#include <stdlib.h>
+
 
 struct entry_t *entry_create(char *key, struct data_t *data){
     struct entry_t *newEntry = malloc(sizeof(struct entry_t));

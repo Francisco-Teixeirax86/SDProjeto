@@ -2,6 +2,9 @@
 #include "entry.h"
 #include "serialization.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 
 /* Serializa todas as keys presentes no array de strings keys
  * para o buffer keys_buf que será alocado dentro da função.

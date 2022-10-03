@@ -4,6 +4,9 @@
 #include "tree-private.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+
 
 struct tree_t *tree_create(){
     
@@ -14,7 +17,9 @@ struct tree_t *tree_create(){
     }
     newTree -> root = node_create();
     newTree -> size = 0;
-}
+
+    return newTree;
+}   
 
 void tree_destroy(struct tree_t *tree){
     if(tree != NULL){
@@ -48,6 +53,7 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
                 }
             } 
         } 
+        return 0;
     } else {
         return -1;
     }
@@ -73,13 +79,13 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
 int tree_del(struct tree_t *tree, char *key) {
     if(key != NULL && tree != NULL){
         if(search_tree(key, tree->root) == true){
-            int nodesDestroyed = node_destroy(getNode(key, tree), 0);
+            int nodesDestroyed = node_destroy(getNode(key, tree->root), 0);
             tree->size = (tree->size) - nodesDestroyed;
             return 0;
         } else {
             return -1;
         }
-    }
+    } else return -1;
 }
 
 int tree_size(struct tree_t *tree){
@@ -93,7 +99,7 @@ int tree_height(struct tree_t *tree){
 char **tree_get_keys(struct tree_t *tree){
     char **keys = malloc(sizeof(tree->size)+1);
     keys[(tree->size)] = NULL;
-    return getKeys(tree->root, keys, 0);
+    return (char **) getKeys(tree->root, keys, 0);
 }
 
 
@@ -101,7 +107,7 @@ void **tree_get_values(struct tree_t *tree){
 
     void **values = malloc(sizeof(tree->size)+1);
     values[(tree->size)] = NULL;
-    return getValues(tree->root, values, 0);
+    return (void **) getValues(tree->root, values, 0);
 }
 
 void tree_free_keys(char **keys){
@@ -130,9 +136,8 @@ void *getValues(struct node_t *node, void **values, int i){
         values[i+1] = getValues(node->leftChild, values, i+1);
     } else if ((node->leftChild) == NULL && (node->rightChild) != NULL){
         values[i+1] = getValues(node->rightChild, values, i+1);
-    } else {
-        return values;
     }
+    return values;
 }
 
 
@@ -148,9 +153,9 @@ char *getKeys(struct node_t *node, char **keys, int i){
         keys[i+1] = getKeys(node->leftChild, keys, i+1);
     } else if ((node->leftChild) == NULL && (node->rightChild) != NULL){
         keys[i+1] = getKeys(node->rightChild, keys, i+1);
-    } else {
-        return keys;
     }
+    
+    return keys;
 }
 
 
@@ -171,23 +176,23 @@ int searchTreeDepth(struct node_t *node){
 
 
 
-bool *search_tree(char *key, struct node_t *node){
+bool search_tree(char *key, struct node_t *node){
    
     if(key != NULL && (node->value) != NULL){
-        int res = strcmp(key,(node->value->key) == 0);
+        int res = strcmp(key,node->value->key);
         if(res == 0){
             return true;
         } else if (res < 0){           
             if((node->leftChild) == NULL){
                 return false;
             } else {
-                search_tree(key, node->leftChild);
+                return search_tree(key, node->leftChild);
             }
         } else {
             if((node->rightChild) == NULL){
                 return false;
             } else {
-                search_tree(key, node->rightChild);
+                return search_tree(key, node->rightChild);
             }
         }
     } else {
@@ -196,20 +201,20 @@ bool *search_tree(char *key, struct node_t *node){
 }
 
 struct node_t *getNode(char *key, struct node_t * node){
-        int res = strcmp(key,(node->value->key) == 0);
+        int res = strcmp(key,node->value->key);
         if(res == 0){
             return node;
         } else if (res < 0){           
             if((node->leftChild) == NULL){
                 return node;
             } else {
-                search_tree(key, node->leftChild);
+                return getNode(key, node->leftChild);
             }
         } else {
             if((node->rightChild) == NULL){
                 return node;
             } else {
-                search_tree(key, node->rightChild);
+                return getNode(key, node->rightChild);
             }
         }
 }
@@ -225,19 +230,19 @@ struct node_t *node_create(){
     newNode -> value = NULL;
     newNode -> leftChild = NULL;
     newNode -> rightChild = NULL;
+
+    return newNode;
 }
 
-int *node_destroy(struct node_t *node, int nodesDestroyed){
-    if(node != NULL){
-        if((node->leftChild != NULL)){
-            node_destroy(node->leftChild, nodesDestroyed);
-        }
-        if((node->rightChild != NULL)) {
-            node_destroy(node->rightChild, nodesDestroyed);
-        }
-        entry_destroy(node->value);
-        free(node);
-        nodesDestroyed += 1;
-        return nodesDestroyed;
+int node_destroy(struct node_t *node, int nodesDestroyed){
+    if((node->leftChild != NULL)){
+        node_destroy(node->leftChild, nodesDestroyed);
     }
+    if((node->rightChild != NULL)) {
+        node_destroy(node->rightChild, nodesDestroyed);
+    }
+    entry_destroy(node->value);
+    free(node);
+    nodesDestroyed += 1;
+    return nodesDestroyed;
 }

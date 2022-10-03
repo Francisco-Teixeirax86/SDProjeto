@@ -1,6 +1,7 @@
 #include "data.h"
 #include <stdio.h>
-
+#include <string.h>
+#include <stdlib.h>
 
 struct data_t *data_create(int size){
     
