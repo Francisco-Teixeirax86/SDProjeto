@@ -48,10 +48,10 @@ void data_destroy(struct data_t *data){
 }
 
 struct data_t *data_dup(struct data_t *data){
-    if(data != NULL){
+    if(data != NULL && data -> datasize > 0 && data -> data != NULL){
        void *copyData = malloc (data->datasize);
-       memcpy(copyData, data, data->datasize);
-       return copyData;
+       memcpy(copyData, data->data, data->datasize);
+       return data_create2(data->datasize, copyData);
     } else {
         return NULL;
     }

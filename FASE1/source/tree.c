@@ -29,26 +29,28 @@ void tree_destroy(struct tree_t *tree){
 }
 
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
-    
     if(key != NULL && tree != NULL && value != NULL){
-        if(tree->root == NULL){
-            tree->root = node_create();
-            tree->root->value = entry_create(key,value);
+        char *createdKey = malloc(strlen(key)+1);
+        strcpy(createdKey,key);
+        struct data_t *createdData = data_dup(value);
+        struct entry_t *createdEntry = entry_create(createdKey,createdData);
+
+        if(tree->root->value == NULL){
+            tree->root->value = createdEntry;
             tree->size = (tree->size)+1;
         } else {
-            struct entry_t *tempEntry = entry_create(key, value);
             struct node_t *correctNode = getNode(key, tree->root);
             if(correctNode != NULL){
                 int res = strcmp(key, correctNode->value->key);
                 if(res == 0){
-                    correctNode->value = tempEntry;
+                    correctNode->value = createdEntry;
                 } else if(res < 0) {
                     correctNode->leftChild = node_create();
-                    correctNode->leftChild->value = tempEntry;
+                    correctNode->leftChild->value = createdEntry;
                     tree->size = (tree->size)+1;
                 } else {
                     correctNode->rightChild = node_create();
-                    correctNode->rightChild->value = tempEntry;
+                    correctNode->rightChild->value = createdEntry;
                     tree->size = (tree->size)+1;
                 }
             } 
@@ -97,9 +99,13 @@ int tree_height(struct tree_t *tree){
 }
 
 char **tree_get_keys(struct tree_t *tree){
-    char **keys = malloc(sizeof(tree->size)+1);
-    keys[(tree->size)] = NULL;
-    return (char **) getKeys(tree->root, keys, 0);
+    if(tree == NULL){
+        return NULL;
+    }
+
+    char **keys = (char **) malloc(sizeof(tree->size)+1);
+    getKeys(tree->root, keys, 0);
+    return keys;
 }
 
 
@@ -141,21 +147,18 @@ void *getValues(struct node_t *node, void **values, int i){
 }
 
 
-
-/*Falta ordenar*/
-char *getKeys(struct node_t *node, char **keys, int i){
-    /*Falta ordenar*/
-    keys[i] = node->value->key;
-    if((node->leftChild) != NULL && (node->rightChild) != NULL){
-        keys[i+1] = getKeys(node->leftChild, keys, i+1);
-        keys[i+2] = getKeys(node->rightChild, keys, i+2);
-    } else if ((node->leftChild) != NULL && (node->rightChild) == NULL){
-        keys[i+1] = getKeys(node->leftChild, keys, i+1);
-    } else if ((node->leftChild) == NULL && (node->rightChild) != NULL){
-        keys[i+1] = getKeys(node->rightChild, keys, i+1);
+void getKeys(struct node_t *node, char **keys, int i){
+    int currentPos = i;
+    if((node->leftChild) == NULL && (node->rightChild) == NULL){
+        keys[currentPos] = node->value->key;
+        return;
     }
-    
-    return keys;
+    if((node->leftChild) != NULL && (node->rightChild) == NULL){
+        getKeys(node->leftChild, keys, currentPos+1);
+    }
+    if((node->leftChild) == NULL && (node->rightChild) != NULL){
+        getKeys(node->rightChild, keys, currentPos+1);
+    } 
 }
 
 

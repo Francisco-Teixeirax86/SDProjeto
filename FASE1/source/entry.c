@@ -24,10 +24,10 @@ void entry_destroy(struct entry_t *entry){
 }
 
 struct entry_t *entry_dup(struct entry_t *entry){
-    if(entry != NULL){
-        void *copyEntry = malloc(sizeof(struct entry_t));
-        memcpy(copyEntry, entry, sizeof(struct entry_t));
-        return copyEntry;
+    if(entry != NULL && entry->key != NULL && entry -> value != NULL){
+        struct data_t *copyEntry = data_dup(entry->value);
+        char *key = strdup(entry->key);
+        return entry_create(key, copyEntry);
     } else {
         return NULL;
     }
@@ -40,7 +40,6 @@ void entry_replace(struct entry_t *entry, char *new_key, struct data_t *new_valu
 }
 
 int entry_compare(struct entry_t *entry1, struct entry_t *entry2){
-    if(entry1 != NULL && entry2 != NULL){
         int cmp = strcmp(entry1->key,entry2->key);
         if(cmp == 0){
             return 0;
@@ -49,5 +48,4 @@ int entry_compare(struct entry_t *entry1, struct entry_t *entry2){
         } else {
             return 1;
         }
-    }
 }
