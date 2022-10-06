@@ -17,6 +17,10 @@ struct data_t *data_create(int size){
         return NULL;
     }
     newData -> data = malloc(size);
+    if (newData->data == NULL) {
+        free(newData);
+        return NULL;
+    }
     return newData;
 }
 
@@ -63,7 +67,7 @@ struct data_t *data_dup(struct data_t *data){
 
 
 void data_replace(struct data_t *data, int new_size, void *new_data){
-    free(data->data);
-    data->datasize = new_size;
-    data->data = new_data;
+        free(data->data);
+        data->datasize = new_size;
+        data->data = new_data;
 }

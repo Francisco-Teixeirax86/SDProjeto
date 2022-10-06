@@ -39,17 +39,18 @@ struct entry_t *entry_dup(struct entry_t *entry){
 }
 
 void entry_replace(struct entry_t *entry, char *new_key, struct data_t *new_value){
-    free(entry->value);
-    entry -> key = new_key;
-    entry -> value = new_value;
+    data_destroy(entry->value);
+    free(entry->key);
+    entry-> key = new_key;
+    entry-> value = new_value;
 }
 
 int entry_compare(struct entry_t *entry1, struct entry_t *entry2){
         int cmp = strcmp(entry1->key,entry2->key);
         if(cmp == 0){
             return 0;
-        } else if (cmp<0){
-            return (-1);
+        } else if (cmp < 0){
+            return -1;
         } else {
             return 1;
         }
