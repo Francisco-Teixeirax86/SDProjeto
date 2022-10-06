@@ -8,7 +8,7 @@
 struct entry_t *entry_create(char *key, struct data_t *data){
     struct entry_t *newEntry = malloc(sizeof(struct entry_t));
     if(newEntry == NULL){
-        free(newEntry);
+ //       free(newEntry);
         return NULL;
     }
     newEntry->key = key;

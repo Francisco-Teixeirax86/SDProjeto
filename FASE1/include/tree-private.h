@@ -23,9 +23,9 @@ struct node_t {
 struct node_t *node_create();
 
 /*
-	Função que destroi um node e os seus filhos, libertanto a memória por ela ocupada
+	Função que destroi um node, libertanto a memória por ela ocupada
 */
-int  node_destroy(struct node_t *node, int nodesDestroyed);
+void node_destroy(struct node_t *node);
 
 /*
 	Função que persquisa uma key especifica numa tree 

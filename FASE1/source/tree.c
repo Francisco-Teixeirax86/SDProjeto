@@ -12,7 +12,7 @@ struct tree_t *tree_create(){
     
     struct tree_t *newTree = malloc(sizeof(struct tree_t));
     if(newTree == NULL){
-        free(newTree);
+       // free(newTree);
         return NULL;
     }
     newTree -> root = node_create();
@@ -23,7 +23,7 @@ struct tree_t *tree_create(){
 
 void tree_destroy(struct tree_t *tree){
     if(tree != NULL){
-        node_destroy(tree->root, 0);
+        node_destroy(tree->root);
         free(tree);
     }
 }
@@ -43,6 +43,7 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
             if(correctNode != NULL){
                 int res = strcmp(key, correctNode->value->key);
                 if(res == 0){
+                    entry_destroy(correctNode->value);
                     correctNode->value = createdEntry;
                 } else if(res < 0) {
                     correctNode->leftChild = node_create();
@@ -78,11 +79,15 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
 
 }
 
+/* Função para remover um elemento da árvore, indicado pela chave key,
+ * libertando toda a memória alocada na respetiva operação tree_put.
+ * Retorna 0 (ok) ou -1 (key not found).
+ */
 int tree_del(struct tree_t *tree, char *key) {
     if(key != NULL && tree != NULL){
         if(search_tree(key, tree->root) == true){
-            int nodesDestroyed = node_destroy(getNode(key, tree->root), 0);
-            tree->size = (tree->size) - nodesDestroyed;
+            node_destroy(getNode(key, tree->root));
+            tree->size = (tree->size) - 1;
             return 0;
         } else {
             return -1;
@@ -237,15 +242,7 @@ struct node_t *node_create(){
     return newNode;
 }
 
-int node_destroy(struct node_t *node, int nodesDestroyed){
-    if((node->leftChild != NULL)){
-        node_destroy(node->leftChild, nodesDestroyed);
-    }
-    if((node->rightChild != NULL)) {
-        node_destroy(node->rightChild, nodesDestroyed);
-    }
+void node_destroy(struct node_t *node){
     entry_destroy(node->value);
     free(node);
-    nodesDestroyed += 1;
-    return nodesDestroyed;
 }
