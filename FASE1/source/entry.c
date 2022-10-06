@@ -18,7 +18,12 @@ struct entry_t *entry_create(char *key, struct data_t *data){
 
 void entry_destroy(struct entry_t *entry){
     if(entry != NULL){
-        data_destroy(entry->value);
+        if(entry->value != NULL) { 
+            data_destroy(entry->value);
+        }
+        if(entry->key != NULL) { 
+            free(entry->key);
+        }
         free(entry);
     }  
 }
