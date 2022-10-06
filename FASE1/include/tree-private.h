@@ -27,6 +27,10 @@ struct node_t *node_create();
 */
 void node_destroy(struct node_t *node);
 
+struct node_t *node_del(struct node_t *node, char *key);
+
+struct node_t *findInorderSucessor(struct node_t *node);
+
 /*
 	Função que persquisa uma key especifica numa tree 
 */
@@ -42,5 +46,9 @@ int searchTreeDepth(struct node_t *node);
 void getKeys(struct node_t *node, char **keys, int i);
 
 void *getValues(struct node_t *node, void **values, int i);
+
+int sizeOfKeys(struct node_t *node, int currentSize);
+
+void getKeysInorder(struct node_t *node, char **keys, int pos);
 
 #endif

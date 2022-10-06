@@ -86,7 +86,7 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
 int tree_del(struct tree_t *tree, char *key) {
     if(key != NULL && tree != NULL){
         if(search_tree(key, tree->root) == true){
-            node_destroy(getNode(key, tree->root));
+            node_del(tree->root, key);
             tree->size = (tree->size) - 1;
             return 0;
         } else {
@@ -104,12 +104,19 @@ int tree_height(struct tree_t *tree){
 }
 
 char **tree_get_keys(struct tree_t *tree){
+
     if(tree == NULL){
         return NULL;
     }
 
-    char **keys = (char **) malloc(sizeof(tree->size)+1);
-    getKeys(tree->root, keys, 0);
+    char **keys = (char **) malloc(sizeof(char)*(sizeOfKeys(tree->root, 0)));
+
+    if(keys == NULL) {
+        return NULL;
+    }
+
+    getKeysInorder(tree->root, keys, 0);
+
     return keys;
 }
 
@@ -137,6 +144,76 @@ void tree_free_values(void **values){
 
 
 //---------------------///-----------------------//
+
+//Retorna o tamanho de todas as strings somado, se temos "abc", "bcd", "cde", "def" então a função retorna
+//12. Usada na tree get keys para saber o tamanho a reservar na memoria
+int sizeOfKeys(struct node_t *node, int currentSize){
+
+    if(node->leftChild != NULL) {
+        currentSize = currentSize + strlen(node->value->key);
+        currentSize = sizeOfKeys(node->leftChild, currentSize);
+    }
+
+    if(node->rightChild != NULL) {
+        currentSize = currentSize + strlen(node->value->key);
+        currentSize = sizeOfKeys(node->rightChild, currentSize);
+    }
+    if(node->leftChild == NULL && node->rightChild == NULL) {
+        currentSize = currentSize + strlen(node->value->key);
+    }
+    return currentSize;
+
+}
+
+struct node_t *node_del(struct node_t *node,char *key) {
+    int cmp = strcmp(key, node->value->key);
+
+    if(cmp < 0) {
+        node->leftChild = node_del(node->leftChild, key);
+    } else if (cmp > 0) {
+        node->rightChild = node_del(node->rightChild, key);
+    } else {
+
+        if(node -> leftChild == NULL && node ->rightChild == NULL) {
+            node_destroy(node);
+            return NULL;
+            
+        } else if(node -> leftChild != NULL && node ->rightChild == NULL) {
+            struct node_t *newNode = node->leftChild;
+            node_destroy(node);
+            return newNode;
+
+        } else if(node -> leftChild == NULL && node ->rightChild != NULL) {
+            struct node_t *newNode = node->rightChild;
+            node_destroy(node);
+            return newNode;
+
+        } else {
+            struct node_t *InorderSuccesor = findInorderSucessor(node->leftChild);
+            node->value = entry_dup(InorderSuccesor->value);
+            node->leftChild = node_del(node->leftChild, InorderSuccesor->value->key);
+        }
+
+    }
+
+    return node;
+    
+}
+
+struct node_t *findInorderSucessor(struct node_t *node) {
+    if(node != NULL) {
+        struct node_t *currentNode = node;
+
+        while(currentNode->rightChild != NULL) {
+            currentNode = currentNode->rightChild;
+        }
+
+        return currentNode;
+    }
+
+    return NULL;
+    
+}
 
 void *getValues(struct node_t *node, void **values, int i){
     values[i] = node->value;
@@ -166,6 +243,18 @@ void getKeys(struct node_t *node, char **keys, int i){
     } 
 }
 
+void getKeysInorder(struct node_t *node, char **keys, int pos) {
+
+    int posInternal = pos;
+    if(node != NULL) {
+        getKeysInorder(node->leftChild, keys, posInternal);
+        char *temp_key = malloc(sizeof(char)*strlen(node->value->key));
+        strcpy(temp_key, node->value->key);
+        keys[posInternal] = temp_key;
+        posInternal++;
+        getKeysInorder(node->rightChild, keys, posInternal);
+    }
+}
 
 int searchTreeDepth(struct node_t *node){
     if (node != NULL){
