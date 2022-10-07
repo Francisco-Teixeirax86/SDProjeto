@@ -108,26 +108,43 @@ char **tree_get_keys(struct tree_t *tree){
     if(tree == NULL){
         return NULL;
     }
-
-    char **keys = (char **) malloc(sizeof(char)*(sizeOfKeys(tree->root, 0)));
+    
+    char **keys = (char **) calloc(tree_size(tree)+1, sizeof(char*));
 
     if(keys == NULL) {
         return NULL;
     }
-    int *pointer = malloc(sizeof(int));
-    *pointer = 0;
+
+    int arrayPos = 0;
+    int *pointer;
     
+    pointer = &arrayPos;
+
     getKeysInorder(tree->root, keys, pointer);
-    free(pointer);
+
     return keys;
 }
 
 
 void **tree_get_values(struct tree_t *tree){
 
-    void **values = malloc(sizeof(tree->size)+1);
-    values[(tree->size)] = NULL;
-    return (void **) getValues(tree->root, values, 0);
+    if(tree == NULL){
+        return NULL;
+    }
+    
+    void **values = (void **) calloc(tree_size(tree)+1, sizeof(struct data_t));
+
+    if(values == NULL){
+        return NULL;
+    }
+    int arrayPos = 0;
+    int *pointer;
+    
+    pointer = &arrayPos;
+
+    getValues(tree->root, values, pointer);
+    
+    return values;
 }
 
 void tree_free_keys(char **keys){
@@ -221,44 +238,27 @@ struct node_t *findInorderSucessor(struct node_t *node) {
     
 }
 
-void *getValues(struct node_t *node, void **values, int i){
-    values[i] = node->value;
-    if((node->leftChild) != NULL && (node->rightChild) != NULL){
-        values[i+1] = getValues(node->leftChild, values, i+1);
-        values[i+2] = getValues(node->rightChild, values, i+2);
-    } else if ((node->leftChild) != NULL && (node->rightChild) == NULL){
-        values[i+1] = getValues(node->leftChild, values, i+1);
-    } else if ((node->leftChild) == NULL && (node->rightChild) != NULL){
-        values[i+1] = getValues(node->rightChild, values, i+1);
+void getValues(struct node_t *node, void **values, int *i){
+    if(node != NULL){
+        getValues(node->leftChild, values, i);
+        void *temp_value = data_dup(node->value->value->data);
+        values[*i] = temp_value;
+        (*i)++;  
+        getValues(node->rightChild, values, i);
     }
-    return values;
-}
-
-
-void getKeys(struct node_t *node, char **keys, int i){
-    int currentPos = i;
-    if((node->leftChild) == NULL && (node->rightChild) == NULL){
-        keys[currentPos] = node->value->key;
-        return;
-    }
-    if((node->leftChild) != NULL && (node->rightChild) == NULL){
-        getKeys(node->leftChild, keys, currentPos+1);
-    }
-    if((node->leftChild) == NULL && (node->rightChild) != NULL){
-        getKeys(node->rightChild, keys, currentPos+1);
-    } 
 }
 
 void getKeysInorder(struct node_t *node, char **keys, int *pos) {
     if(node != NULL) {
         getKeysInorder(node->leftChild, keys, pos);
-        char *temp_key = malloc(sizeof(char)*strlen(node->value->key));
+        char *temp_key = malloc(strlen(node->value->key)+1);
         strcpy(temp_key, node->value->key);
         keys[*pos] = temp_key;
-        (*pos)++;
+        (*pos)++;  
         getKeysInorder(node->rightChild, keys, pos);
     }
 }
+
 
 int searchTreeDepth(struct node_t *node){
     if (node != NULL){
@@ -270,7 +270,7 @@ int searchTreeDepth(struct node_t *node){
         
         if(leftDepth>rightDepth) return leftDepth;
         else return rightDepth;
-    } else {
+    } else {    
         return 0;
     }
 }
@@ -325,7 +325,6 @@ struct node_t *node_create(){
     
     struct node_t *newNode = malloc(sizeof(struct node_t));
     if(newNode == NULL){
-        free(newNode);
         return NULL;
     }
     newNode -> value = NULL;
