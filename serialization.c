@@ -25,18 +25,20 @@ int keyArray_to_buffer(char **keys, char **keys_buf) {
         keysSize += strlen(keys[i]);
         i++;
     }
+    
     int bufferSize = sizeof(char)*keysSize;
-    *keys_buf = malloc(bufferSize+sizeof(int));
+    *keys_buf = malloc(bufferSize);
+
     if(*keys_buf == NULL) {
         return -1;
     }
-    sprintf(keys_buf[0], "%d", bufferSize);
-    i = 1;
+
+    i = 0;
     while(keys[i] != NULL){
-        char *tempChar = malloc(strlen(keys[i]));
-        memcpy(tempChar, keys[i], sizeof(int));
-        keys_buf[i] = tempChar;
-        free(tempChar);
+        char *tempKey = malloc(sizeof(char)*strlen(keys[i]));
+        memcpy(tempKey, keys[i], sizeof(int));
+        keys_buf[i] = tempKey;
+        free(tempKey);
         i++;
     }
 
@@ -54,19 +56,21 @@ char** buffer_to_keyArray(char *keys_buf, int keys_buf_size){
         return NULL;
     }
 
-    char **returnArray = malloc(keys_buf_size-sizeof(int));
+    char **returnArray = malloc(keys_buf_size*sizeof(char));
 
     if(returnArray == NULL){
         return NULL;
     }
     
+    char *token = strtok(keys_buf, "\0");
     int i = 0;
 
-    while(keys_buf[i] != '\0'){
-        char *tempChar = malloc(strlen(keys_buf[i+1]));
-        memcpy(tempChar, keys_buf[i+1], sizeof(int));
-        returnArray[i] = tempChar;
-        free(tempChar);
+    while(token != NULL){
+        char *tempToken = malloc(sizeof(char)*strlen(token));
+        memcpy(tempToken, token, sizeof(char)*strlen(token));
+        returnArray[i] = tempToken;
+        token = strtok(keys_buf, "\0");
+        free(tempToken);
         i++;
     }
 
