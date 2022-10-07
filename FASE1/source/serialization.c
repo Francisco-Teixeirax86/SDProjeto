@@ -19,30 +19,29 @@ int keyArray_to_buffer(char **keys, char **keys_buf) {
         return -1;
     }
 
-    int i = 0;
-    int keysSize = 0;
-    while(keys[i] != NULL){
-        keysSize += strlen(keys[i]);
-        i++;
+    int keysCounter = 0;
+    int keySize = 0;
+    int bufferCounter = 0;
+    while(keys[keysCounter] != NULL){
+        keySize += strlen(keys[keysCounter]);
+        keysCounter++;
     }
-    
-    int bufferSize = sizeof(char)*keysSize;
-    *keys_buf = malloc(bufferSize);
+    keys_buf = malloc(sizeof(int)*keysCounter+keySize);
 
-    if(*keys_buf == NULL) {
+    if(keys_buf == NULL) {
         return -1;
     }
 
-    i = 0;
-    while(keys[i] != NULL){
-        char *tempKey = malloc(sizeof(char)*strlen(keys[i]));
-        memcpy(tempKey, keys[i], sizeof(int));
-        keys_buf[i] = tempKey;
-        free(tempKey);
-        i++;
+    keysCounter = 0;
+    while(keys[keysCounter] != NULL){
+        memcpy(keys_buf[bufferCounter], (int*) strlen(keys[keysCounter]), sizeof(int));
+        memcpy(keys_buf[bufferCounter+1], keys[keysCounter], strlen(keys[keysCounter]));
+        keysCounter++;
+        bufferCounter += 2;
     }
+    
 
-    return bufferSize;
+    return sizeof(int)*keysCounter+keySize;
 }
 
 /* De-serializa a mensagem contida em keys_buf, com tamanho
