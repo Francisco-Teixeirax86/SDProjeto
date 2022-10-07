@@ -1,3 +1,9 @@
+/*
+Grupo 21:
+	Francisco Teixeira | FC56305
+	Alexandre Rodrigues | FC54472
+	Afonso Soares | FC56314
+*/
 #ifndef _TREE_H
 #define _TREE_H /* Módulo tree */
 

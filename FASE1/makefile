@@ -1,3 +1,10 @@
+#
+#Grupo 21:
+#	Francisco Teixeira | FC56305
+#	Alexandre Rodrigues | FC54472
+#	Afonso Soares | FC56314
+#
+
 BIN_DIR = binary
 INC_DIR = include
 OBJ_DIR = object

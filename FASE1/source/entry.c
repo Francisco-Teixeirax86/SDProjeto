@@ -1,3 +1,9 @@
+/*
+Grupo 21:
+	Francisco Teixeira | FC56305
+	Alexandre Rodrigues | FC54472
+	Afonso Soares | FC56314
+*/
 #include "entry.h"
 #include <stdio.h>
 #include "data.h"
@@ -8,7 +14,6 @@
 struct entry_t *entry_create(char *key, struct data_t *data){
     struct entry_t *newEntry = malloc(sizeof(struct entry_t));
     if(newEntry == NULL){
- //       free(newEntry);
         return NULL;
     }
     newEntry->key = key;

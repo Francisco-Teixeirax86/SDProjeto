@@ -1,3 +1,9 @@
+/*
+Grupo 21:
+	Francisco Teixeira | FC56305
+	Alexandre Rodrigues | FC54472
+	Afonso Soares | FC56314
+*/
 #include "tree.h"
 #include "entry.h"
 #include "data.h"
@@ -79,10 +85,6 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
 
 }
 
-/* Função para remover um elemento da árvore, indicado pela chave key,
- * libertando toda a memória alocada na respetiva operação tree_put.
- * Retorna 0 (ok) ou -1 (key not found).
- */
 int tree_del(struct tree_t *tree, char *key) {
     if(key != NULL && tree != NULL){
         if(search_tree(key, tree->root) == true){
@@ -167,26 +169,6 @@ void tree_free_values(void **values){
 
 
 //---------------------///-----------------------//
-
-//Retorna o tamanho de todas as strings somado, se temos "abc", "bcd", "cde", "def" então a função retorna
-//12. Usada na tree get keys para saber o tamanho a reservar na memoria
-int sizeOfKeys(struct node_t *node, int currentSize){
-
-    if(node->leftChild != NULL) {
-        currentSize = currentSize + strlen(node->value->key);
-        currentSize = sizeOfKeys(node->leftChild, currentSize);
-    }
-
-    if(node->rightChild != NULL) {
-        currentSize = currentSize + strlen(node->value->key);
-        currentSize = sizeOfKeys(node->rightChild, currentSize);
-    }
-    if(node->leftChild == NULL && node->rightChild == NULL) {
-        currentSize = currentSize + strlen(node->value->key);
-    }
-    return currentSize;
-
-}
 
 struct node_t *node_del(struct node_t *node,char *key) {
     int cmp = strcmp(key, node->value->key);
