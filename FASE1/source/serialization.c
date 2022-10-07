@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 
+
 /* Serializa todas as keys presentes no array de strings keys
  * para o buffer keys_buf que será alocado dentro da função.
  * O array de keys a passar em argumento pode ser obtido através 
@@ -14,20 +15,32 @@
  */
 int keyArray_to_buffer(char **keys, char **keys_buf) {
 
-    if(**keys == NULL || *keys_buf == NULL) {
+    if(keys == NULL || keys_buf == NULL) {
         return -1;
     }
 
-    int size = htonl(sizeof(keys));
-    int bufferSize = sizeof(int) + sizeof(keys) + 1;
+    int i = 0;
+    int keysSize = 0;
+    while(keys[i] != NULL){
+        keysSize += strlen(keys[i]);
+        i++;
+    }
+    
+    int bufferSize = sizeof(char)*keysSize;
     *keys_buf = malloc(bufferSize);
 
     if(*keys_buf == NULL) {
         return -1;
     }
-    
-    memcpy(keys_buf, &size, sizeof(int));
-    memcpy(keys_buf+sizeof(int), &keys, bufferSize);
+
+    i = 0;
+    while(keys[i] != NULL){
+        char *tempKey = malloc(sizeof(char)*strlen(keys[i]));
+        memcpy(tempKey, keys[i], sizeof(int));
+        keys_buf[i] = tempKey;
+        free(tempKey);
+        i++;
+    }
 
     return bufferSize;
 }
@@ -43,13 +56,23 @@ char** buffer_to_keyArray(char *keys_buf, int keys_buf_size){
         return NULL;
     }
 
-    char **returnArray = malloc(keys_buf_size);
+    char **returnArray = malloc(keys_buf_size*sizeof(char));
 
     if(returnArray == NULL){
         return NULL;
     }
+    
+    char *token = strtok(keys_buf, "\0");
+    int i = 0;
 
-    memcpy(returnArray, &keys_buf+sizeof(int), keys_buf_size-sizeof(int));
+    while(token != NULL){
+        char *tempToken = malloc(sizeof(char)*strlen(token));
+        memcpy(tempToken, token, sizeof(char)*strlen(token));
+        returnArray[i] = tempToken;
+        token = strtok(keys_buf, "\0");
+        free(tempToken);
+        i++;
+    }
 
     return returnArray;
 }
