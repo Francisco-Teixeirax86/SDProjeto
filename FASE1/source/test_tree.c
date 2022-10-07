@@ -227,6 +227,12 @@ int testGetKeys() {
 
 	result = result && (tree_size(tree) == i);
 
+	int w = 0;
+	while(keys[w]!= NULL){
+		printf("%s\n", keys[w]);
+		w++;
+	}
+
 	tree_free_keys(keys);
 
 	tree_destroy(tree);
@@ -241,15 +247,15 @@ int main() {
 	int score = 0;
 	printf("iniciando teste tree bin\n");
 
-	score += testTreeVazia();
+	//score += testTreeVazia();
 
-	score += testPutInexistente();
+	//score += testPutInexistente();
 
-	score += testPutExistente();
+	//score += testPutExistente();
 
-	score += testDelInexistente();
+	//score += testDelInexistente();
 
-	score += testDelExistente();
+	//score += testDelExistente();
 
 	score += testGetKeys();
 	

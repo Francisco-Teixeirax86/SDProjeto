@@ -114,9 +114,11 @@ char **tree_get_keys(struct tree_t *tree){
     if(keys == NULL) {
         return NULL;
     }
-
-    getKeysInorder(tree->root, keys, 0);
-
+    int *pointer = malloc(sizeof(int));
+    *pointer = 0;
+    
+    getKeysInorder(tree->root, keys, pointer);
+    free(pointer);
     return keys;
 }
 
@@ -129,15 +131,19 @@ void **tree_get_values(struct tree_t *tree){
 }
 
 void tree_free_keys(char **keys){
-    for(int i = 0; i < sizeof(keys); i++){
+    int i = 0;
+    while (keys[i] != NULL) {
         free(keys[i]);
+        i++;
     }
     free(keys);
 }
 
 void tree_free_values(void **values){
-    for(int i = 0; i < sizeof(values); i++){
-        free(values[i]);
+    int i = 0;
+    while (values[i] != NULL) {
+        data_destroy(values[i]);
+        i++;
     }
     free(values);
 }
@@ -243,16 +249,14 @@ void getKeys(struct node_t *node, char **keys, int i){
     } 
 }
 
-void getKeysInorder(struct node_t *node, char **keys, int pos) {
-
-    int posInternal = pos;
+void getKeysInorder(struct node_t *node, char **keys, int *pos) {
     if(node != NULL) {
-        getKeysInorder(node->leftChild, keys, posInternal);
+        getKeysInorder(node->leftChild, keys, pos);
         char *temp_key = malloc(sizeof(char)*strlen(node->value->key));
         strcpy(temp_key, node->value->key);
-        keys[posInternal] = temp_key;
-        posInternal++;
-        getKeysInorder(node->rightChild, keys, posInternal);
+        keys[*pos] = temp_key;
+        (*pos)++;
+        getKeysInorder(node->rightChild, keys, pos);
     }
 }
 

@@ -49,6 +49,5 @@ void *getValues(struct node_t *node, void **values, int i);
 
 int sizeOfKeys(struct node_t *node, int currentSize);
 
-void getKeysInorder(struct node_t *node, char **keys, int pos);
-
+void getKeysInorder(struct node_t *node, char **keys, int *pos);
 #endif
