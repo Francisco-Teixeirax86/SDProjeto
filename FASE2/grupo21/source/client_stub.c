@@ -21,6 +21,30 @@ Grupo 21:
  */
 struct rtree_t *rtree_connect(const char *address_port) {
     
+    //Dados
+    client_tree = (struct rtree_t *) malloc (sizeof(struct rtree_t));
+    char *hostname = strtok((char *)address_port, ":");
+    int port = atoi(strtok(NULL,":"));
+
+    // Preenche estrutura server para estabelecer conexão
+    client_tree->socket.sin_family = AF_INET;
+    client_tree->socket.sin_port = htons(port);
+    if (inet_pton(AF_INET, argv[1], &server.sin_addr) < 1) {
+        printf("Erro ao converter IP\n");
+        close(client_tree->socket);
+        free(client_tree);
+    return -1;
+    }
+
+    // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
+    int value = network_connect(tree_global);
+    if(value == -1){ //Verificar se a conexão foi bem sucedida em network_connect
+        free(tree_global);
+        return NULL;
+    }
+
+    return(tree_global);
+
 }
 
 /* Termina a associação entre o cliente e o servidor, fechando a 
@@ -66,6 +90,16 @@ int rtree_del(struct rtree_t *rtree, char *key) {
  */
 int rtree_size(struct rtree_t *rtree) {
 
+    struct message_t *msg = (struct message_t * ) malloc(sizeof(struct message_t));
+    message_t__init(msg);
+    if(msg == NULL){
+        return -1;
+    }
+    msg.opcode = MESSAGE_T__OPCODE__OP_SIZE;
+    msg.c_type = MESSAGE_T__C_TYPE__CT_NONE;
+    msg = network_send_receive(rtree,msg);
+
+    printf("The size of the tree is: %d\n", msg->message.size);
 }
 
 /* Função que devolve a altura da árvore.

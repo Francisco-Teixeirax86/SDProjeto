@@ -22,6 +22,20 @@ Grupo 21:
  */
 int network_connect(struct rtree_t *rtree) {
 
+	// Cria socket TCP
+	if ((rtree->sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("Erro ao criar socket TCP");
+		return -1;
+	}
+
+	// Estabelece conexão com o servidor definido em server
+	if (connect(rtree->sockfd, (struct sockaddr *) &rtree->socket, sizeof(rtree->socket)) < 0) {
+		perror("Erro ao conectar-se ao servidor");
+		close(sockfd);
+	return -1;
+	}
+
+	return 0;
 }
 
 /* Esta função deve:
