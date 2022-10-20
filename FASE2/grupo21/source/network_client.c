@@ -6,6 +6,7 @@ Grupo 21:
 */
 #include "client_stub.h"
 #include "client_stub-private.h"
+#include "message-private.h"
 #include "sdmessage.pb-c.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,8 +32,8 @@ int network_connect(struct rtree_t *rtree) {
 	// Estabelece conexão com o servidor definido em server
 	if (connect(rtree->sockfd, (struct sockaddr *) &rtree->socket, sizeof(rtree->socket)) < 0) {
 		perror("Erro ao conectar-se ao servidor");
-		close(sockfd);
-	return -1;
+		close(rtree->sockfd);
+		return -1;
 	}
 
 	return 0;

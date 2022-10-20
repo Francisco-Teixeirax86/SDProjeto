@@ -10,7 +10,7 @@ Grupo 21:
 #include "client_stub.h"
 
 struct rtree_t {
-    struct sockaddr_in *socket; //Informação pertinente ao server
+    struct sockaddr_in socket; //Informação pertinente ao server
     int sockfd; //Socket a usar pelo cliente
 };
 

@@ -5,11 +5,13 @@ Grupo 21:
 	Afonso Soares | FC56314
 */
 #include "tree_skel.h"
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 
-struct sockaddr_in *socket;
+struct sockaddr_in server;
 int sockfd;
 
 /* Função para preparar uma socket de receção de pedidos de ligação
@@ -17,7 +19,28 @@ int sockfd;
  * Retornar descritor do socket (OK) ou -1 (erro).
  */
 int network_server_init(short port) {
-
+	// Cria socket TCP
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
+		perror("Erro ao criar socket");
+		return -1;
+	}
+	// Preenche estrutura server para bind
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	// Faz bind
+	if (bind(sockfd, (struct sockaddr *) &server, sizeof(server)) < 0){
+		perror("Erro ao fazer bind");
+		close(sockfd);
+		return -1;
+	};
+	// Faz listen
+	if (listen(sockfd, 0) < 0){
+		perror("Erro ao executar listen");
+		close(sockfd);
+		return -1;
+	};
+	return sockfd;
 }
 
 /* Esta função deve:
