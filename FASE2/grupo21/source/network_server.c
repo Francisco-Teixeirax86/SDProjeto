@@ -5,7 +5,9 @@ Grupo 21:
 	Afonso Soares | FC56314
 */
 #include "tree_skel.h"
+#include "message-private.h"
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +53,12 @@ int network_server_init(short port) {
  * - Enviar a resposta ao cliente usando a função network_send.
  */
 int network_main_loop(int listening_socket) {
-
+	int newsocketfd;
+	struct sockaddr_in client;
+	socklen_t size_client;
+	while ((newsocketfd = accept(listening_socket,(struct sockaddr *) &client, &size_client)) != -1) {
+		//TODO
+    }
 }
 
 /* Esta função deve:
@@ -60,6 +67,24 @@ int network_main_loop(int listening_socket) {
  *   reservando a memória necessária para a estrutura message_t.
  */
 struct message_t *network_receive(int client_socket) {
+	int nbytes = 0;
+	int msg_size = 0;
+	if (nbytes = read_all(client_socket, &msg_size, sizeof(int)) == -1) {
+		close(client_socket);
+		return NULL;
+	}
+	int host_size = 0;
+	host_size = ntohl(msg_size);
+	char *buf = malloc(host_size);
+	if (nbytes = read_all(client_socket, buf, host_size) == -1) {
+		close(client_socket);
+		return NULL;
+	}
+	struct message_t *msg = message_t__unpack(NULL, host_size, buf);
+	if (msg == NULL) {
+		return NULL;
+	}
+	return msg;
 
 }
 
@@ -69,7 +94,21 @@ struct message_t *network_receive(int client_socket) {
  * - Enviar a mensagem serializada, através do client_socket.
  */
 int network_send(int client_socket, struct message_t *msg) {
-
+	int msg_psize = message_t__get_packed_size(msg);
+	int net_size = htonl(msg_psize);
+	char *buf = malloc(msg_psize);
+	message_t__pack(msg, buf);
+	if (nbytes = write_all(client_socket, &msg_size, sizeof(int)) == -1) {
+		close(client_socket);
+		return -1;
+	}
+	if (nbytes = write_all(client_socket, buf, host_size) == -1) {
+		close(client_socket);
+		return -1;
+	}
+	message_t__free_unpacked(msg, NULL);
+	free(buf);
+    return 0;
 }
 
 /* A função network_server_close() liberta os recursos alocados por
