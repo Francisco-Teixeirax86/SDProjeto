@@ -102,7 +102,7 @@ int network_send(int client_socket, MessageT *msg) {
 		close(client_socket);
 		return -1;
 	}
-	if (nbytes = write_all(client_socket, buf, host_size) == -1) {
+	if (nbytes = write_all(client_socket, buf, net_size) == -1) {
 		close(client_socket);
 		return -1;
 	}
