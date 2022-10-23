@@ -73,17 +73,17 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry) {
         return -1;
     }
     //malloc necessário?
-    struct message_t *msg = (struct message_t * ) malloc(sizeof(struct message_t)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
+    MessageT *msg = (MessageT * ) malloc(sizeof(MessageT)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
     message_t__init(msg);
-    entry_t__init(msg->message.entry); //PARÃMETRO ENTRY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
-    msg->message.entry->key = entry->key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
-    msg->message.entry->data->datasize = entry->value->datasize; //PARÃMETRO DATASIZE NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
-    msg->message.entry->data->data = entry->value->data;
-    msg->message.opcode = MESSAGE_T__OPCODE__OP_PUT;
-    msg->message.c_type = MESSAGE_T__C_TYPE__CT_ENTRY;
-    msg->message.key = key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
+    entry_t__init(msg->entry); //PARÃMETRO ENTRY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
+    msg->entry->key = entry->key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
+    msg->entry->data->datasize = entry->value->datasize; //PARÃMETRO DATASIZE NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
+    msg->entry->data->data = entry->value->data;
+    msg->opcode = MESSAGE_T__OPCODE__OP_PUT;
+    msg->c_type = MESSAGE_T__C_TYPE__CT_ENTRY;
+    msg->key = key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
 
-    struct message_t *responseMsg = network_send_receive(rtree, msg); //&msg?
+    MessageT *responseMsg = network_send_receive(rtree, msg); //&msg?
     if(responseMsg == NULL){
         return -1;
     }
@@ -105,13 +105,13 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key) {
         return -1;
     }
     //malloc necessário?
-    struct message_t *msg = (struct message_t * ) malloc(sizeof(struct message_t)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
+    MessageT *msg = (MessageT * ) malloc(sizeof(MessageT)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
     message_t__init(msg);
-    msg->message.opcode = MESSAGE_T__OPCODE__OP_GET;
-    msg->message.c_type = MESSAGE_T__C_TYPE__CT_KEY;
-    msg->message.key = key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
+    msg->opcode = MESSAGE_T__OPCODE__OP_GET;
+    msg->c_type = MESSAGE_T__C_TYPE__CT_KEY;
+    msg->key = key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
 
-    struct message_t *responseMsg = network_send_receive(rtree, msg); //&msg?
+    MessageT *responseMsg = network_send_receive(rtree, msg); //&msg?
     if(responseMsg == NULL){
         return -1;
     }
@@ -134,13 +134,13 @@ int rtree_del(struct rtree_t *rtree, char *key) {
         return -1;
     }
     //malloc necessário?
-    struct message_t *msg = (struct message_t * ) malloc(sizeof(struct message_t)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
+    MessageT *msg = (MessageT * ) malloc(sizeof(MessageT)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
     message_t__init(msg);
-    msg->message.opcode = MESSAGE_T__OPCODE__OP_DEL;
-    msg->message.c_type = MESSAGE_T__C_TYPE__CT_KEY;
-    msg->message.key = key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
+    msg->opcode = MESSAGE_T__OPCODE__OP_DEL;
+    msg->c_type = MESSAGE_T__C_TYPE__CT_KEY;
+    msg->key = key; //PARÃMETRO KEY NÃO EXISTE NO PROTO (TEM DE SER CRIADO?)
 
-    struct message_t *responseMsg = network_send_receive(rtree, msg); //&msg?
+    MessageT *responseMsg = network_send_receive(rtree, msg); //&msg?
     if(responseMsg == NULL){
         return -1;
     }
@@ -161,12 +161,12 @@ int rtree_size(struct rtree_t *rtree) {
         return -1;
     }
     //malloc necessário?
-    struct message_t *msg = (struct message_t * ) malloc(sizeof(struct message_t)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
+    MessageT *msg = (MessageT * ) malloc(sizeof(MessageT)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
     message_t__init(msg);
-    msg->message.opcode = MESSAGE_T__OPCODE__OP_SIZE;
-    msg->message.c_type = MESSAGE_T__C_TYPE__CT_NONE;
+    msg->opcode = MESSAGE_T__OPCODE__OP_SIZE;
+    msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
 
-    struct message_t *responseMsg = network_send_receive(rtree, msg); //&msg?
+    MessageT *responseMsg = network_send_receive(rtree, msg); //&msg?
     if(responseMsg == NULL){
         return -1;
     }
@@ -190,12 +190,12 @@ int rtree_height(struct rtree_t *rtree) {
         return -1;
     }
     //malloc necessário?
-    struct message_t *msg = (struct message_t * ) malloc(sizeof(struct message_t)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
+    MessageT *msg = (MessageT * ) malloc(sizeof(MessageT)); //VAI SER PRECISO TROCAR message_t PARA MessageT OU _MessageT
     message_t__init(msg);
-    msg->message.opcode = MESSAGE_T__OPCODE__OP_HEIGHT;
-    msg->message.c_type = MESSAGE_T__C_TYPE__CT_NONE;
+    msg->opcode = MESSAGE_T__OPCODE__OP_HEIGHT;
+    msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
 
-    struct message_t *responseMsg = network_send_receive(rtree, msg); //&msg?
+    MessageT *responseMsg = network_send_receive(rtree, msg); //&msg?
     if(responseMsg == NULL){
         return -1;
     }

@@ -66,7 +66,7 @@ int network_main_loop(int listening_socket) {
  * - De-serializar estes bytes e construir a mensagem com o pedido,
  *   reservando a memória necessária para a estrutura message_t.
  */
-struct message_t *network_receive(int client_socket) {
+MessageT *network_receive(int client_socket) {
 	int nbytes = 0;
 	int msg_size = 0;
 	if (nbytes = read_all(client_socket, &msg_size, sizeof(int)) == -1) {
@@ -80,7 +80,7 @@ struct message_t *network_receive(int client_socket) {
 		close(client_socket);
 		return NULL;
 	}
-	struct message_t *msg = message_t__unpack(NULL, host_size, buf);
+	MessageT *msg = message_t__unpack(NULL, host_size, buf);
 	if (msg == NULL) {
 		return NULL;
 	}
@@ -93,7 +93,7 @@ struct message_t *network_receive(int client_socket) {
  * - Libertar a memória ocupada por esta mensagem;
  * - Enviar a mensagem serializada, através do client_socket.
  */
-int network_send(int client_socket, struct message_t *msg) {
+int network_send(int client_socket, MessageT *msg) {
 	int msg_psize = message_t__get_packed_size(msg);
 	int net_size = htonl(msg_psize);
 	char *buf = malloc(msg_psize);
