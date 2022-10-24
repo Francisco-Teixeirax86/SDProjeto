@@ -49,6 +49,32 @@ int network_connect(struct rtree_t *rtree) {
  */
 MessageT *network_send_receive(struct rtree_t * rtree, MessageT *msg) {
 
+	int msgLen = message_t__get_packed_size(msg);
+	int len = htonl(msgLen);
+	uint8_t *buf = malloc(len);
+
+	message_t__pack(msg, buf);
+
+	write(rtree->socket, &len, sizeof(int));
+	write_all(rtree->socket, buf, len);
+	free(buf);
+
+	int len_received;
+	read(rtree->socket, &len_received,sizeof(int));
+	int msgLen = ntohl(len_received);
+
+	str[len_received] = '\0';
+
+	MessageT *temp = message_t__unpack(NULL, len_received, str);
+
+	msg = *temp;
+
+	if(msg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
+		return msg;
+	}
+
+	return NULL;
+ 
 }
 
 /* A função network_close() fecha a ligação estabelecida por

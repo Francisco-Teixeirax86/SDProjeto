@@ -37,4 +37,16 @@ void tree_skel_destroy() {
 */
 int invoke(MessageT *msg) {
     
+    MessageT__Opcode opCode = msg->opcode;
+
+    switch(opCode) {
+
+        case MESSAGE_T__OPCODE__OP_SIZE:
+
+            msg->opcode = MESSAGE_T__OPCODE__OP_SIZE + 1;
+            msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+            msg->size = tree_size(tree);
+            return 0;
+    }
+    return -1;
 }

@@ -28,4 +28,6 @@ message message_t
 
         bytes data = 3;
 
+        optional int32 size = 4;
+
 };

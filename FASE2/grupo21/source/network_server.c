@@ -57,8 +57,27 @@ int network_main_loop(int listening_socket) {
 	struct sockaddr_in client;
 	socklen_t size_client;
 	while ((newsocketfd = accept(listening_socket,(struct sockaddr *) &client, &size_client)) != -1) {
-		//TODO
+		
+		int receiving = 0;
+		while(receiving == 0) {
+			MessageT *msg = network_receive(newsocketfd);
+
+			if(msg == NULL ) {
+				receiving = 1;
+				close(newsocketfd)
+				continue;
+			}
+
+			invoke(msg);
+
+			if((network_send(newsocketfd, msg) == -1)) {
+				close(newsocketfd);
+				return -1;
+			};
+		}
+		return 0;
     }
+	return 0;
 }
 
 /* Esta função deve:
@@ -73,17 +92,21 @@ MessageT *network_receive(int client_socket) {
 		close(client_socket);
 		return NULL;
 	}
-	int host_size = 0;
+	int host_size;
 	host_size = ntohl(msg_size);
 	char *buf = malloc(host_size);
 	if (nbytes = read_all(client_socket, buf, host_size) == -1) {
 		close(client_socket);
 		return NULL;
 	}
-	MessageT *msg = message_t__unpack(NULL, host_size, buf);
-	if (msg == NULL) {
+
+	MessageT *msg = (MessageT * ) malloc(sizeof(MessageT));
+	if(msg == NULL) {
 		return NULL;
 	}
+
+	*msg = message_t__unpack(NULL, host_size, buf);
+	
 	return msg;
 
 }
