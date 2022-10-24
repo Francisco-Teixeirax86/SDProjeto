@@ -8,6 +8,7 @@ Grupo 21:
 #define _CLIENT_STUB_PRIVATE_H
 
 #include "client_stub.h"
+#include "inet.h"
 
 struct rtree_t {
     struct sockaddr_in socket; //Informação pertinente ao server

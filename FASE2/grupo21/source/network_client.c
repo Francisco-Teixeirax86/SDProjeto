@@ -4,14 +4,11 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
+#include "inet.h"
 #include "client_stub.h"
 #include "client_stub-private.h"
 #include "message-private.h"
 #include "sdmessage.pb-c.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 /* Esta função deve:
  * - Obter o endereço do servidor (struct sockaddr_in) a base da
@@ -65,9 +62,7 @@ MessageT *network_send_receive(struct rtree_t * rtree, MessageT *msg) {
 
 	str[len_received] = '\0';
 
-	MessageT *temp = message_t__unpack(NULL, len_received, str);
-
-	msg = *temp;
+	msg = message_t__unpack(NULL, len_received, str);
 
 	if(msg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
 		return msg;

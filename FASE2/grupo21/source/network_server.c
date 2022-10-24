@@ -4,14 +4,10 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
+#include "inet.h"
 #include "tree_skel.h"
 #include "message-private.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
+
 
 struct sockaddr_in server;
 int sockfd;
@@ -104,7 +100,7 @@ MessageT *network_receive(int client_socket) {
 	if(msg == NULL) {
 		return NULL;
 	}
-
+	message_t__init(msg);
 	*msg = message_t__unpack(NULL, host_size, buf);
 	
 	return msg;

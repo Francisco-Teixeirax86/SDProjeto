@@ -4,9 +4,8 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
-
-#include "sdmessage.pb-c.h"
 #include "inet.h"
+#include "sdmessage.pb-c.h"
 #include "message-private.h"
 
 int write_all(int sock, char *buf, int len) {

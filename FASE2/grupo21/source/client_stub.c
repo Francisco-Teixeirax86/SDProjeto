@@ -4,15 +4,13 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
+#include "inet.h"
 #include "client_stub-private.h"
 #include "client_stub.h"
 #include "data.h"
 #include "entry.h"
 #include "network_client.h"
 #include "sdmessage.pb-c.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
@@ -34,7 +32,7 @@ struct rtree_t *rtree_connect(const char *address_port) {
     if (inet_pton(AF_INET, host, &tree->socket.sin_addr) < 1) {
         printf("Erro ao converter IP\n");
         close(tree->sockfd);
-        return -1;
+        return NULL;
     }
 
     // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)

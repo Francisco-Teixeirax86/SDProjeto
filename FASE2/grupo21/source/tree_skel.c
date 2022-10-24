@@ -4,11 +4,9 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
+#include "inet.h"
 #include "sdmessage.pb-c.h"
 #include "tree.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 struct tree_t *tree;
 
