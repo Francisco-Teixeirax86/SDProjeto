@@ -48,24 +48,25 @@ MessageT *network_send_receive(struct rtree_t * rtree, MessageT *msg) {
 
 	int msgLen = message_t__get_packed_size(msg);
 	int len = htonl(msgLen);
-	uint8_t *buf = malloc(len);
+	uint8_t *buf = malloc(msgLen);
 
 	message_t__pack(msg, buf);
 
 	write(rtree->sockfd, &len, sizeof(int));
-	write_all(rtree->sockfd, buf, len);
+	write_all(rtree->sockfd, buf, msgLen);
 	free(buf);
 
 	int len_received;
 	read(rtree->sockfd, &len_received,sizeof(int));
-	msgLen = ntohl(len_received);
+	len_received = ntohl(len_received);
 
-	uint8_t str[msgLen];
-  	read_all(rtree->sockfd,str, msgLen);
+	uint8_t *str = malloc(len_received);
+  	read_all(rtree->sockfd, str, len_received);
 
-	str[msgLen] = '\0';
+	str[len_received] = '\0';
 
-	msg = message_t__unpack(NULL, msgLen, str);
+	msg = message_t__unpack(NULL, len_received, str);
+	free(str);
 
 	if(msg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
 		return msg;

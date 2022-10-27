@@ -24,9 +24,9 @@ int main(int argc, char *argv[]) {
 		char* command = malloc(100);
 		printf("Introduza um comamdo para ser executado sobre a árvore");
 		printf("\n");
-		char input [100];
-		fgets(input, 100, stdin);
-		command = strtok(input, " \n");
+		//char input [100];
+		//fgets(input, 100, stdin);
+		command = "size";
 		printf("test2");
 		if(strcmp(command, "size") == 0) {
 			printf("test");
@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			printf("ola");
 		}
+		free(command);
  	}
 	return 0;
 }
