@@ -35,21 +35,75 @@ void tree_skel_destroy() {
 */
 int invoke(MessageT *msg) {
     
+    struct data_t *data;
     MessageT__Opcode opCode = msg->opcode;
-
-    int size;
 
     switch(opCode) {
 
         case MESSAGE_T__OPCODE__OP_SIZE:
-            size = tree_size(tree);
+
             msg->opcode = MESSAGE_T__OPCODE__OP_SIZE + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            msg->size = size;
-            break;
+            msg->size = tree_size(tree);
             return 0;
+            break;
+
+        
+
+        case MESSAGE_T__OPCODE__OP_PUT:
+            if(tree_put(tree, msg->entry->key, msg->entry->data) == -1) {
+                printf("Ocorreu um erro ao colocar a chave na árvore");
+                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return -1;
+                break;
+            } else {
+                msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return 0;
+                break;
+            }
+
+        case MESSAGE_T__OPCODE__OP_DEL:
+            if(tree_del(tree, msg->entry->key) == -1) {
+                printf("Ocorreu um erro a apagar a chave, certifique-se de que a chave fornecidade existe na tree");
+                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return -1;
+                break;
+            } else {
+                msg->opcode = MESSAGE_T__OPCODE__OP_DEL + 1;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return 0;
+                break;
+            }
+
+        case MESSAGE_T__OPCODE__OP_GET:
+            data = tree_get(tree, msg->keys);
+            if(data == NULL) {
+                printf("Ocorreu um erro na procura da chave, certifique-se de que a chave fornecidade existe na tree");
+                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return -1;
+                break;
+            } else {
+                msg->opcode = MESSAGE_T__OPCODE__OP_GET + 1;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return 0;
+                break;
+            }
+
+        case MESSAGE_T__OPCODE__OP_HEIGHT:
+
+            msg->opcode = MESSAGE_T__OPCODE__OP_HEIGHT + 1;
+            msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+            msg->size = tree_height(tree);
+            return 0;
+            break;
+
         default:
             return -1;
+            break;
     }
     return -1;
 }
