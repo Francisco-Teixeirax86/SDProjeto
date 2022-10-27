@@ -8,9 +8,20 @@ Grupo 21:
 #include "tree_skel.h"
 #include "message-private.h"
 #include "network_server.h"
+#include <signal.h>
 
 struct sockaddr_in server;
 int sockfd;
+void server_signal(int);
+
+/* 
+ * Função handler em caso de fecho inesperado do servidor
+ */
+void server_signal(int signal) {
+	network_server_close();
+    printf("Sinal de fecho de servidor.\n" );
+    exit(1);
+}
 
 /* Função para preparar uma socket de receção de pedidos de ligação
  * num determinado porto.
@@ -26,6 +37,7 @@ int network_server_init(short port) {
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	signal(SIGINT, server_signal);
 	// Faz bind
 	if (bind(sockfd, (struct sockaddr *) &server, sizeof(server)) < 0){
 		perror("Erro ao fazer bind");
@@ -52,6 +64,7 @@ int network_main_loop(int listening_socket) {
 	int newsocketfd;
 	struct sockaddr_in client;
 	socklen_t size_client;
+	signal(SIGINT, server_signal);
 	while ((newsocketfd = accept(listening_socket,(struct sockaddr *) &client, &size_client)) != -1) {
 		
 		int receiving = 0;

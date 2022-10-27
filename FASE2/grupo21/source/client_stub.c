@@ -11,10 +11,21 @@ Grupo 21:
 #include "entry.h"
 #include "network_client.h"
 #include "sdmessage.pb-c.h"
+#include <signal.h>
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
 struct rtree_t *tree;
+void client_stub_signal(int);
+
+/* 
+ * Função handler que deteta e trata o sinal em caso de fecho inesperado do cliente
+ */
+void client_stub_signal(int signal) {
+    free(tree);
+    printf("Sinal de fecho de cliente, pressionou Ctrl + C.\n" );
+    exit(1);
+}
 
 /* Função para estabelecer uma associação entre o cliente e o servidor, 
  * em que address_port é uma string no formato <hostname>:<port>.
@@ -41,8 +52,9 @@ struct rtree_t *rtree_connect(const char *address_port) {
         return NULL;
     }
 
-    return tree;
+    signal(SIGINT, client_stub_signal);
 
+    return tree;
 }
 
 /* Termina a associação entre o cliente e o servidor, fechando a 

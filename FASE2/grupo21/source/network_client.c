@@ -4,11 +4,22 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
+#include <signal.h>
 #include "inet.h"
 #include "client_stub.h"
 #include "client_stub-private.h"
 #include "message-private.h"
 #include "sdmessage.pb-c.h"
+
+void client_signal(int);
+
+/* 
+ * Função handler em caso de fecho inesperado do cliente
+ */
+void client_signal(int signal) {
+    printf("Sinal de fecho de cliente.\n" );
+    exit(1);
+}
 
 /* Esta função deve:
  * - Obter o endereço do servidor (struct sockaddr_in) a base da
@@ -32,6 +43,8 @@ int network_connect(struct rtree_t *rtree) {
 		close(rtree->sockfd);
 		return -1;
 	}
+
+	signal(SIGPIPE, client_signal);
 
 	return 0;
 }
