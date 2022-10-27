@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
 	if(argc != 2) {
 		printf("Certifique-se que executou o programa corretamente, ./serve <port>");
-		printf('\n');
+		printf("\n");
 		return -1;
 	}
 

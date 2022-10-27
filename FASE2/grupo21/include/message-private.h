@@ -12,8 +12,8 @@ Grupo 21:
 
 //PODE SER DEFINIDO UM STRUCT message_t AQUI COM MessageT
 
-int write_all(int sock, char *buf, int len);
+int write_all(int sock, uint8_t *buf, int len);
 
-int read_all(int sock, char *buf, int len);
+int read_all(int sock, uint8_t *buf, int len);
 
 #endif

@@ -52,17 +52,20 @@ MessageT *network_send_receive(struct rtree_t * rtree, MessageT *msg) {
 
 	message_t__pack(msg, buf);
 
-	write(rtree->socket, &len, sizeof(int));
-	write_all(rtree->socket, buf, len);
+	write(rtree->sockfd, &len, sizeof(int));
+	write_all(rtree->sockfd, buf, len);
 	free(buf);
 
 	int len_received;
-	read(rtree->socket, &len_received,sizeof(int));
-	int msgLen = ntohl(len_received);
+	read(rtree->sockfd, &len_received,sizeof(int));
+	msgLen = ntohl(len_received);
 
-	str[len_received] = '\0';
+	uint8_t str[msgLen];
+  	read_all(rtree->sockfd,str, msgLen);
 
-	msg = message_t__unpack(NULL, len_received, str);
+	str[msgLen] = '\0';
+
+	msg = message_t__unpack(NULL, msgLen, str);
 
 	if(msg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
 		return msg;

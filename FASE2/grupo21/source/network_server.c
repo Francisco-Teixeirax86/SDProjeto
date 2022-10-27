@@ -7,7 +7,7 @@ Grupo 21:
 #include "inet.h"
 #include "tree_skel.h"
 #include "message-private.h"
-
+#include "network_server.h"
 
 struct sockaddr_in server;
 int sockfd;
@@ -60,7 +60,7 @@ int network_main_loop(int listening_socket) {
 
 			if(msg == NULL ) {
 				receiving = 1;
-				close(newsocketfd)
+				close(newsocketfd);
 				continue;
 			}
 
@@ -84,14 +84,14 @@ int network_main_loop(int listening_socket) {
 MessageT *network_receive(int client_socket) {
 	int nbytes = 0;
 	int msg_size = 0;
-	if (nbytes = read_all(client_socket, &msg_size, sizeof(int)) == -1) {
+	if ((nbytes = read(client_socket, &msg_size, sizeof(int)))== -1) {
 		close(client_socket);
 		return NULL;
 	}
 	int host_size;
 	host_size = ntohl(msg_size);
-	char *buf = malloc(host_size);
-	if (nbytes = read_all(client_socket, buf, host_size) == -1) {
+	uint8_t *buf = malloc(host_size);
+	if ((nbytes = read_all(client_socket, buf, host_size)) == -1) {
 		close(client_socket);
 		return NULL;
 	}
@@ -101,7 +101,7 @@ MessageT *network_receive(int client_socket) {
 		return NULL;
 	}
 	message_t__init(msg);
-	*msg = message_t__unpack(NULL, host_size, buf);
+	msg = message_t__unpack(NULL, host_size, buf);
 	
 	return msg;
 
@@ -115,13 +115,13 @@ MessageT *network_receive(int client_socket) {
 int network_send(int client_socket, MessageT *msg) {
 	int msg_psize = message_t__get_packed_size(msg);
 	int net_size = htonl(msg_psize);
-	char *buf = malloc(msg_psize);
+	uint8_t *buf = malloc(msg_psize);
 	message_t__pack(msg, buf);
-	if (nbytes = write_all(client_socket, &msg_size, sizeof(int)) == -1) {
+	if ((net_size = write(client_socket, &msg_psize, sizeof(int))) == -1) {
 		close(client_socket);
 		return -1;
 	}
-	if (nbytes = write_all(client_socket, buf, net_size) == -1) {
+	if ((net_size = write_all(client_socket, buf, net_size)) == -1) {
 		close(client_socket);
 		return -1;
 	}

@@ -7,14 +7,15 @@ Grupo 21:
 #include "inet.h"
 #include "sdmessage.pb-c.h"
 #include "message-private.h"
+#include <errno.h>
 
-int write_all(int sock, char *buf, int len) {
+int write_all(int sock, uint8_t *buf, int len) {
     int bufsize = len;
     while(len > 0) {
         int res = write(sock, buf, len);
         if(res < 0) {
             if(errno == EINTR) continue;
-            perror(“write failed:”);
+            perror("write failed:");
             return res;
         }
         buf += res;
@@ -23,15 +24,15 @@ int write_all(int sock, char *buf, int len) {
     return bufsize;
 }
 
-int read_all(int sock, char *buf, int len) {
+int read_all(int sock, uint8_t *buf, int len) {
     int res;
-    int read = 0;
-    while (read < len) {
-        res = read(sock, buf + read, len - read);
+    int readlen = 0;
+    while (readlen < len) {
+        res = read(sock, buf + readlen, len - readlen);
         if (res < 1) { //error
             return res;
         }
-        read = read + res;
+        readlen = readlen + res;
     }
-    return read;
+    return readlen;
 }
