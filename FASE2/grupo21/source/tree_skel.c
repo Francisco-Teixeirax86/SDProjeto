@@ -37,14 +37,19 @@ int invoke(MessageT *msg) {
     
     MessageT__Opcode opCode = msg->opcode;
 
+    int size;
+
     switch(opCode) {
 
         case MESSAGE_T__OPCODE__OP_SIZE:
-
+            size = tree_size(tree);
             msg->opcode = MESSAGE_T__OPCODE__OP_SIZE + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            msg->size = tree_size(tree);
+            msg->size = size;
+            break;
             return 0;
+        default:
+            return -1;
     }
     return -1;
 }

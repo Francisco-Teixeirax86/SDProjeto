@@ -36,12 +36,15 @@ message message_t
 
 }
 
-message entry_t{
+message entry_t
+ {
         string key = 1;
         data_t data = 2;
 
- }
- message data_t{
-   sint32 datasize = 1;
-   string data = 2;
+}
+
+message data_t 
+ {
+        sint32 datasize = 1;
+        string data = 2;
 }
