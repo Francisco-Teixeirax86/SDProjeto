@@ -66,7 +66,7 @@ int rtree_disconnect(struct rtree_t *rtree) {
  * Se a key já existe, vai substituir essa entrada pelos novos dados.
  * Devolve 0 (ok, em adição/substituição) ou -1 (problemas).
  */
-
+/*
 int rtree_put(struct rtree_t *rtree, struct entry_t *entry) {
     if (rtree == NULL) {
         return -1;
