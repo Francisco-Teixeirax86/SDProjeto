@@ -8,7 +8,7 @@ Grupo 21:
 #include "sdmessage.pb-c.h"
 #include "tree.h"
 
-struct tree_t *tree;
+struct tree_t *tree_s;
 
 /* Inicia o skeleton da árvore.
  * O main() do servidor deve chamar esta função antes de poder usar a
@@ -16,8 +16,8 @@ struct tree_t *tree;
  * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
  */
 int tree_skel_init() {
-    tree = tree_create();
-    if (tree == NULL) {
+    tree_s = tree_create();
+    if (tree_s == NULL) {
         return -1;
     }
     return 0;
@@ -26,7 +26,7 @@ int tree_skel_init() {
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */
 void tree_skel_destroy() {
-    tree_destroy(tree);
+    tree_destroy(tree_s);
 }
 
 /* Executa uma operação na árvore (indicada pelo opcode contido em msg)
@@ -44,7 +44,7 @@ int invoke(MessageT *msg) {
 
             msg->opcode = MESSAGE_T__OPCODE__OP_SIZE + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            msg->size = tree_size(tree);
+            msg->size = tree_size(tree_s);
             return 0;
             break;
 
@@ -52,7 +52,7 @@ int invoke(MessageT *msg) {
 
         case MESSAGE_T__OPCODE__OP_PUT:
             data = data_create2(msg->entry->data->datasize, msg->entry->data->data);
-            if(tree_put(tree, msg->entry->key, data) == -1) {
+            if(tree_put(tree_s, msg->entry->key, data) == -1) {
                 printf("Ocorreu um erro ao colocar a chave na árvore");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
@@ -66,7 +66,7 @@ int invoke(MessageT *msg) {
             }
 
         case MESSAGE_T__OPCODE__OP_DEL:
-            if(tree_del(tree, msg->entry->key) == -1) {
+            if(tree_del(tree_s, msg->entry->key) == -1) {
                 printf("Ocorreu um erro a apagar a chave, certifique-se de que a chave fornecidade existe na tree");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
@@ -80,7 +80,7 @@ int invoke(MessageT *msg) {
             }
 
         case MESSAGE_T__OPCODE__OP_GET:
-            data = tree_get(tree, msg->key);
+            data = tree_get(tree_s, msg->key);
             if(data == NULL) {
                 printf("Ocorreu um erro na procura da chave, certifique-se de que a chave fornecidade existe na tree");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
@@ -98,7 +98,7 @@ int invoke(MessageT *msg) {
 
             msg->opcode = MESSAGE_T__OPCODE__OP_HEIGHT + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            msg->size = tree_height(tree);
+            msg->size = tree_height(tree_s);
             return 0;
             break;
 
