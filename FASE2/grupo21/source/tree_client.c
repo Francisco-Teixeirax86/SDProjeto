@@ -79,17 +79,21 @@ int main(int argc, char *argv[]) {
 			char *key_temp = strtok(NULL, " ");
 			char *key_input = strtok(key_temp, "\n");
 
-			char *key = malloc(strlen(key_input) + 1);
-			strcpy(key, key_input);
-			if(rtree_del(tree, key) == -1) {
-				printf("Ocorreu um erro ao apagar elemento da árvore");
-				free(key);
-				printf("\n");
+			if(key_input != NULL) {
+				char *key = malloc(strlen(key_input) + 1);
+				strcpy(key, key_input);
+				if(rtree_del(tree, key) == -1) {
+					printf("Ocorreu um erro ao apagar elemento da árvore");
+					free(key);
+					printf("\n");
+				} else {
+					free(key);
+					printf("\n");
+				}
 			} else {
-				free(key);
+				printf("Ocorreu um erro, certifique-se que está a usar del <key>");
 				printf("\n");
 			}
-			
 
 		} else if(strcmp(command, "height") == 0) {
 			if(rtree_height(tree) == -1) {

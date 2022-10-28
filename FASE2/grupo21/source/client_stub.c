@@ -15,14 +15,14 @@ Grupo 21:
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
-struct rtree_t *tree;
+struct rtree_t *tree_c;
 void client_stub_signal(int);
 
 /* 
  * Função handler que deteta e trata o sinal em caso de fecho inesperado do cliente
  */
 void client_stub_signal(int signal) {
-    free(tree);
+    free(tree_c);
     printf("Sinal de fecho de cliente, pressionou Ctrl + C.\n" );
     exit(1);
 }
@@ -33,28 +33,28 @@ void client_stub_signal(int signal) {
  */
 struct rtree_t *rtree_connect(const char *address_port) {
     //Dados
-    tree = (struct rtree_t *) malloc (sizeof(struct rtree_t));
+    tree_c = (struct rtree_t *) malloc (sizeof(struct rtree_t));
     char *host = strtok((char *)address_port, ":");
     int port = atoi(strtok(NULL,":"));
 
-    tree->socket.sin_family = AF_INET;
-    tree->socket.sin_port = htons(port);
-    if (inet_pton(AF_INET, host, &tree->socket.sin_addr) < 1) {
+    tree_c->socket.sin_family = AF_INET;
+    tree_c->socket.sin_port = htons(port);
+    if (inet_pton(AF_INET, host, &tree_c->socket.sin_addr) < 1) {
         printf("Erro ao converter IP\n");
-        close(tree->sockfd);
+        close(tree_c->sockfd);
         return NULL;
     }
 
     // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
-    int connect = network_connect(tree);
+    int connect = network_connect(tree_c);
     if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
-        free(tree);
+        free(tree_c);
         return NULL;
     }
 
     signal(SIGINT, client_stub_signal);
 
-    return tree;
+    return tree_c;
 }
 
 /* Termina a associação entre o cliente e o servidor, fechando a 
