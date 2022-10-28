@@ -130,11 +130,11 @@ int network_send(int client_socket, MessageT *msg) {
 	int net_size = htonl(msg_psize);
 	uint8_t *buf = malloc(msg_psize);
 	message_t__pack(msg, buf);
-	if ((net_size = write(client_socket, &msg_psize, sizeof(int))) == -1) {
-		close(client_socket);
+	if (write_all(client_socket, (uint8_t *) &net_size, sizeof(int)) == -1) {
+		close(client_socket); 
 		return -1;
 	}
-	if ((net_size = write_all(client_socket, buf, net_size)) == -1) {
+	if (write_all(client_socket, buf, net_size) == -1) {
 		close(client_socket);
 		return -1;
 	}
