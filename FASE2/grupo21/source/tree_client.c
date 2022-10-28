@@ -38,17 +38,23 @@ int main(int argc, char *argv[]) {
 			void *data_temp = strtok(NULL, " ");
 			void *data_input = strtok(data_temp, "\n");
 
-			char *data_ = malloc(strlen(data_input+1));
-			strcpy(data_, data_temp);
+			if(key != NULL && data_input != NULL) {
+				char *data_ = malloc(strlen(data_input+1));			
+				strcpy(data_, data_temp);
+				struct data_t *data5 = data_create2(strlen(data_input) + 1, data_);
+				struct entry_t *entry = entry_create(key, data5);
 
-			struct data_t *data = data_create2(strlen(data_input) + 1, data_);
-			struct entry_t *entry = entry_create(key, data);
-
-			if(rtree_put(tree, entry) == -1) {
-				printf("Ocorreu um erro a colocar o elemento na árvore");
+				if(rtree_put(tree, entry) == -1) {
+					printf("Ocorreu um erro a colocar o elemento na árvore");
+					printf("\n");
+				}
+				data_destroy(data5);
+			
+				printf("\n");
+			} else {
+				printf("Ocorreu um erro, certifique-se que está a usar put <key> <data>");
 				printf("\n");
 			}
-			printf("\n");
 
 		} else if(strcmp(command, "get") == 0) {
 

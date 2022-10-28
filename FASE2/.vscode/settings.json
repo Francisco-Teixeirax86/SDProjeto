@@ -3,6 +3,7 @@
         "message-private.h": "c",
         "sdmessage.pb-c.h": "c",
         "client_stub-private.h": "c",
-        "signal.h": "c"
+        "signal.h": "c",
+        "data.h": "c"
     }
 }

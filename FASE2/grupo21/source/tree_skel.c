@@ -41,7 +41,6 @@ int invoke(MessageT *msg) {
     switch(opCode) {
 
         case MESSAGE_T__OPCODE__OP_SIZE:
-
             msg->opcode = MESSAGE_T__OPCODE__OP_SIZE + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
             msg->size = tree_size(tree);
@@ -95,10 +94,9 @@ int invoke(MessageT *msg) {
             }
 
         case MESSAGE_T__OPCODE__OP_HEIGHT:
-
             msg->opcode = MESSAGE_T__OPCODE__OP_HEIGHT + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            msg->size = tree_height(tree);
+            msg->height = tree_height(tree);
             return 0;
             break;
 
