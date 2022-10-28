@@ -109,6 +109,8 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry) {
     if(responseMsg == NULL) {
         return -1;
     }
+    printf("Data com key %s e tamanho %d adicionada com sucesso a tree", responseMsg->entry->key, responseMsg->entry->data->datasize);
+    printf("\n");
     message_t__free_unpacked(responseMsg, NULL);
     return 0;
 }
@@ -135,6 +137,10 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key) {
     }
     msg->entry->data = (DataT*) malloc (sizeof(DataT));
     data_t__init(msg->entry->data);
+    if(msg->entry->data == NULL) {
+        message_t__free_unpacked(msg, NULL);
+        return NULL;
+    }
     msg->entry->key = key;
     msg->opcode = MESSAGE_T__OPCODE__OP_GET;
     msg->c_type = MESSAGE_T__C_TYPE__CT_KEY;
@@ -143,9 +149,11 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key) {
     if(responseMsg == NULL) {
         return NULL;
     }
-    int d_size = msg->entry->data->datasize;
-    struct data_t *return_data = data_create2(d_size, msg->entry->data->data);
+    int d_size = responseMsg->entry->data->datasize;
+    struct data_t *return_data = data_create2(d_size, responseMsg->entry->data->data);
     message_t__free_unpacked(responseMsg, NULL);
+    printf("Na key %s foi encontrada uma data com tamanho %d", key, return_data->datasize);
+    printf("\n");
     return return_data;
 }
 
@@ -173,6 +181,11 @@ int rtree_del(struct rtree_t *rtree, char *key) {
     msg->c_type = MESSAGE_T__C_TYPE__CT_KEY;
 
     MessageT *responseMsg = network_send_receive(rtree, msg);
+    if(responseMsg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
+        printf("Foi apagado com sucesso o elemento com a key %s", key);
+        printf("\n");
+    }
+    printf("\n");
     if(responseMsg == NULL) {
         return -1;
     }
@@ -199,6 +212,7 @@ int rtree_size(struct rtree_t *rtree) {
     }
 
     printf("O nº de elementos da árvore é: %d\n", responseMsg->size);
+    printf("\n");
     return responseMsg->size;
 }
 
@@ -222,6 +236,7 @@ int rtree_height(struct rtree_t *rtree) {
         return -1;
     }
     printf("A altura da árvore é: %d\n", responseMsg->height);
+    printf("\n");
     return responseMsg->height;
 }
 

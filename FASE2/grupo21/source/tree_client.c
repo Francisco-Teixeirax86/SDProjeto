@@ -27,9 +27,12 @@ int main(int argc, char *argv[]) {
 		char input [100];
 		fgets(input, 100, stdin);
 		command = strtok(input, " \n");
+		printf("\n");
+		//command = "get";
 		if(strcmp(command, "size") == 0) {
 			if(rtree_size(tree) == -1) {
 				printf("Ocorreu um erro na busca de size");
+				printf("\n");
 			}
 			printf("\n");
 		} else if(strcmp(command, "put") == 0) {
@@ -41,7 +44,7 @@ int main(int argc, char *argv[]) {
 			if(key != NULL && data_input != NULL) {
 				char *data_ = malloc(strlen(data_input+1));			
 				strcpy(data_, data_temp);
-				struct data_t *data5 = data_create2(strlen(data_input) + 1, data_);
+				struct data_t *data5 = data_create2(strlen(data_input), data_);
 				struct entry_t *entry = entry_create(key, data5);
 
 				if(rtree_put(tree, entry) == -1) {
@@ -61,19 +64,24 @@ int main(int argc, char *argv[]) {
 			char *key_temp = strtok(NULL, " ");
 			char *key_input = strtok(key_temp, "\n");
 
-			char *key = malloc(strlen(key_input) + 1);
-			strcpy(key, key_input);
+			if(key_input != NULL) {
+				char *key = malloc(strlen(key_input) + 1);
+				strcpy(key, key_input);
 
-			struct data_t *data = rtree_get(tree, key);
-			if(data == NULL) {
-				printf("Ocorreu um erro ao ir buscar o elemento a árvore");
-				free(key);
-				printf("\n");
+				struct data_t *data = rtree_get(tree, key);
+				if(data == NULL) {
+					printf("Ocorreu um erro ao ir buscar o elemento a árvore");
+					free(key);
+					printf("\n");
+				} else {
+					free(key);
+					printf("\n");
+				}
 			} else {
-				data_destroy(data);
-				free(key);
+				printf("Ocorreu um erro, certifique-se que está a usar get <key>");
 				printf("\n");
 			}
+			
 			
 		} else if(strcmp(command, "del") == 0) {
 			char *key_temp = strtok(NULL, " ");
@@ -98,6 +106,7 @@ int main(int argc, char *argv[]) {
 		} else if(strcmp(command, "height") == 0) {
 			if(rtree_height(tree) == -1) {
 				printf("Ocorreu um erro na busca de height");
+				printf("\n");
 			}
 			printf("\n");
 		

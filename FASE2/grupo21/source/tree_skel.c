@@ -15,8 +15,10 @@ struct tree_t *tree_s;
  * função invoke(). 
  * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
  */
-int tree_skel_init() {
+int tree_skel_init() {   
     tree_s = tree_create();
+    struct data_t *data5 = data_create2(strlen("ola"), "ola");
+    tree_put(tree_s, "bye", data5);
     if (tree_s == NULL) {
         return -1;
     }
@@ -79,7 +81,7 @@ int invoke(MessageT *msg) {
             }
 
         case MESSAGE_T__OPCODE__OP_GET:
-            data = tree_get(tree_s, msg->key);
+            data = tree_get(tree_s, msg->entry->key);
             if(data == NULL) {
                 printf("Ocorreu um erro na procura da chave, certifique-se de que a chave fornecidade existe na tree");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
@@ -88,7 +90,10 @@ int invoke(MessageT *msg) {
                 break;
             } else {
                 msg->opcode = MESSAGE_T__OPCODE__OP_GET + 1;
-                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_VALUE;
+                msg->entry->data->datasize = data->datasize;
+                msg->entry->data->data = data->data;
+                //data_destroy(data);
                 return 0;
                 break;
             }
