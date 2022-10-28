@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 			strcpy(data_, data_temp);
 
 			struct data_t *data = data_create2(strlen(data_input) + 1, data_);
-			struct data_t *entry = entry_create(key, data);
+			struct entry_t *entry = entry_create(key, data);
 
 			if(rtree_put(tree, entry) == -1) {
 				printf("Ocorreu um erro a colocar o elemento na árvore");
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 			strcpy(key, key_input);
 
 			struct data_t *data = rtree_get(tree, key);
-			if(data == -1) {
+			if(data == NULL) {
 				printf("Ocorreu um erro ao ir buscar o elemento a árvore");
 				free(key);
 				printf("\n");

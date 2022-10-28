@@ -224,7 +224,7 @@ const ProtobufCEnumDescriptor message_t__c_type__descriptor =
   message_t__c_type__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
-static const ProtobufCFieldDescriptor message_t__field_descriptors[6] =
+static const ProtobufCFieldDescriptor message_t__field_descriptors[8] =
 {
   {
     "opcode",
@@ -298,19 +298,45 @@ static const ProtobufCFieldDescriptor message_t__field_descriptors[6] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "keys",
+    7,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_STRING,
+    offsetof(MessageT, n_keys),
+    offsetof(MessageT, keys),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "key",
+    8,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MessageT, key),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned message_t__field_indices_by_name[] = {
   1,   /* field[1] = c_type */
   5,   /* field[5] = data */
   2,   /* field[2] = entry */
   4,   /* field[4] = height */
+  7,   /* field[7] = key */
+  6,   /* field[6] = keys */
   0,   /* field[0] = opcode */
   3,   /* field[3] = size */
 };
 static const ProtobufCIntRange message_t__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 6 }
+  { 0, 8 }
 };
 const ProtobufCMessageDescriptor message_t__descriptor =
 {
@@ -320,7 +346,7 @@ const ProtobufCMessageDescriptor message_t__descriptor =
   "MessageT",
   "",
   sizeof(MessageT),
-  6,
+  8,
   message_t__field_descriptors,
   message_t__field_indices_by_name,
   1,  message_t__number_ranges,

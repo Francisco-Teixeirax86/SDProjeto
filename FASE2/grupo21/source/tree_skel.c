@@ -51,7 +51,8 @@ int invoke(MessageT *msg) {
         
 
         case MESSAGE_T__OPCODE__OP_PUT:
-            if(tree_put(tree, msg->entry->key, msg->entry->data) == -1) {
+            data = data_create2(msg->entry->data->datasize, msg->entry->data->data);
+            if(tree_put(tree, msg->entry->key, data) == -1) {
                 printf("Ocorreu um erro ao colocar a chave na árvore");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
@@ -79,7 +80,7 @@ int invoke(MessageT *msg) {
             }
 
         case MESSAGE_T__OPCODE__OP_GET:
-            data = tree_get(tree, msg->keys);
+            data = tree_get(tree, msg->key);
             if(data == NULL) {
                 printf("Ocorreu um erro na procura da chave, certifique-se de que a chave fornecidade existe na tree");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;

@@ -34,6 +34,10 @@ message message_t
 
         repeated string data = 6;
 
+        repeated string keys = 7;
+
+        string key = 8;
+
 }
 
 message entry_t
