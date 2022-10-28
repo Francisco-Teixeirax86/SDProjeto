@@ -134,7 +134,7 @@ int network_send(int client_socket, MessageT *msg) {
 		close(client_socket); 
 		return -1;
 	}
-	if (write_all(client_socket, buf, net_size) == -1) {
+	if (write_all(client_socket, buf, msg_psize) == -1) {
 		close(client_socket);
 		return -1;
 	}
