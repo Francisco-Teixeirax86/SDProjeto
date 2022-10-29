@@ -255,12 +255,22 @@ char **rtree_get_keys(struct rtree_t *rtree) {
     message_t__init(msg);
     msg->opcode = MESSAGE_T__OPCODE__OP_GETKEYS;
     msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+    msg->n_keys = 0;
+    msg->keys = NULL;
+    msg->size = 0;
 
     MessageT *responseMsg = network_send_receive(rtree, msg); 
     if(responseMsg == NULL) {
         return NULL;
     } else {
-        char **keys = responseMsg->data;
+        char **keys = malloc(responseMsg->size + 1);
+        keys = responseMsg->keys;
+        printf("As seguintes keys estão na árvore: ");
+        printf("\n");
+        for(int i = 0; keys[i] != NULL; i++) {
+            printf("%s", keys[i]);
+            printf("\n");
+        }
         message_t__free_unpacked(responseMsg, NULL);
         return keys;
     }

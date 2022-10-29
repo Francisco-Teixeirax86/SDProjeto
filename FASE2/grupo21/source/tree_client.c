@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 		fgets(input, 100, stdin);
 		command = strtok(input, " \n");
 		printf("\n");
-		//command = "get";
+		//command = "getkeys";
 		if(strcmp(command, "size") == 0) {
 			if(rtree_size(tree) == -1) {
 				printf("Ocorreu um erro na busca de size");
@@ -110,13 +110,39 @@ int main(int argc, char *argv[]) {
 			}
 			printf("\n");
 		
+		} else if(strcmp(command, "getkeys") == 0) {
+			char **keysC = rtree_get_keys(tree);
+			if(keysC == NULL) {
+				printf("Ocorreu um erro na busca das keys");
+				//free(keysC); <---- Isto da um double free ???  se nunca dermos free temos um leak
+				printf("\n");
+			} else {
+				//free(keysC); <---- Isto da um double free ???  se nunca dermos free temos um leak
+				printf("\n");
+			}
 		} else if(strcmp(command, "quit") == 0) {
 			rtree_disconnect(tree);
 			quit = 1;
 			printf("\n");
 
 		} else {
-			printf("Introduza um comando da list"); //adciionar lista
+			printf("Introduza um comando da list: ");
+			printf("\n");
+			printf("size");
+			printf("\n");
+			printf("put <key> <data>");
+			printf("\n");
+			printf("get <key>");
+			printf("\n");
+			printf("del <key>");
+			printf("\n");
+			printf("height");
+			printf("\n");
+			printf("getkeys");
+			printf("\n");
+			printf("getvalues");
+			printf("\n");
+			printf("quit");
 		}
  	}
 	return 0;
