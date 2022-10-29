@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 		fgets(input, 100, stdin);
 		command = strtok(input, " \n");
 		printf("\n");
-		//command = "getkeys";
+		//command = "getvalues";
 		if(strcmp(command, "size") == 0) {
 			if(rtree_size(tree) == -1) {
 				printf("Ocorreu um erro na busca de size");
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 			void *data_input = strtok(data_temp, "\n");
 
 			if(key != NULL && data_input != NULL) {
-				char *data_ = malloc(strlen(data_input+1));			
+				char *data_ = malloc(strlen(data_input) +1);			
 				strcpy(data_, data_temp);
 				struct data_t *data5 = data_create2(strlen(data_input), data_);
 				struct entry_t *entry = entry_create(key, data5);
@@ -120,7 +120,15 @@ int main(int argc, char *argv[]) {
 				//free(keysC); <---- Isto da um double free ???  se nunca dermos free temos um leak
 				printf("\n");
 			}
-		} else if(strcmp(command, "quit") == 0) {
+		} else if(strcmp(command, "getvalues") == 0){
+			void **valuesC = rtree_get_values(tree);
+			if(valuesC == NULL){
+				printf("Ocorreu um erro na busca dos valores");
+				printf("\n");
+			} else {
+				printf("\n");
+			}
+		}else if(strcmp(command, "quit") == 0) {
 			rtree_disconnect(tree);
 			quit = 1;
 			printf("\n");

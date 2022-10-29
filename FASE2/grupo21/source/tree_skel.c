@@ -42,6 +42,7 @@ int invoke(MessageT *msg) {
     struct data_t *data;
     MessageT__Opcode opCode = msg->opcode;
     char **keysR;
+    void **valuesR;
 
     switch(opCode) {
 
@@ -121,6 +122,27 @@ int invoke(MessageT *msg) {
                 msg->n_keys = tree_size(tree_s);
                 msg->keys = keysR;
                 msg->size = sizeof(keysR);
+                return 0;
+                break;
+            }
+
+        case MESSAGE_T__OPCODE__OP_GETVALUES:
+            valuesR = tree_get_values(tree_s);
+            char **tempvalues = malloc(sizeof(valuesR));
+            if(valuesR == NULL){
+                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return -1;
+                break;
+            } else {
+                for(int w = 0; valuesR[w] != NULL; w++){
+                    tempvalues[w] = (char*) valuesR[w];
+                }
+                msg->opcode = MESSAGE_T__OPCODE__OP_GETVALUES + 1;
+                msg->c_type = MESSAGE_T__C_TYPE__CT_VALUES;
+                msg->n_keys = tree_size(tree_s);
+                msg->data = tempvalues;
+                msg->size = sizeof(tempvalues);
                 return 0;
                 break;
             }
