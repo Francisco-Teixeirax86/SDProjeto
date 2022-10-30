@@ -10,10 +10,14 @@ Grupo 21:
 #include "sdmessage.pb-c.h"
 #include "inet.h"
 
-//PODE SER DEFINIDO UM STRUCT message_t AQUI COM MessageT
-
+/*
+ * Função que envia uma string inteira pela rede
+*/
 int write_all(int sock, uint8_t *buf, int len);
 
+/*
+ * Função que recebe uma string inteira pela rede
+*/
 int read_all(int sock, uint8_t *buf, int len);
 
 #endif

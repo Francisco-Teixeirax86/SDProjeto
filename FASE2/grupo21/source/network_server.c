@@ -115,6 +115,7 @@ MessageT *network_receive(int client_socket) {
 	}
 	message_t__init(msg);
 	msg = message_t__unpack(NULL, host_size, buf);
+	free(buf);
 	
 	return msg;
 

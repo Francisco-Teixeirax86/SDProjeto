@@ -29,7 +29,7 @@ int read_all(int sock, uint8_t *buf, int len) {
     int readlen = 0;
     while (readlen < len) {
         res = read(sock, buf + readlen, len - readlen);
-        if (res < 1) { //error
+        if (res < 1) {
             return res;
         }
         readlen = readlen + res;

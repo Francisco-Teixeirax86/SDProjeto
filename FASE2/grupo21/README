@@ -4,4 +4,4 @@ Grupo 21:
 	Afonso Soares | FC56314
 	
 Notas: 
-	- Na serialization não conseguimos fazer a segunda função
+	- O comando getvalues dá falta de segmentação caso haja algum valor para devolver.

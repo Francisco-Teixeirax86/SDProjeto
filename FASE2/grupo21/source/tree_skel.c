@@ -17,10 +17,6 @@ struct tree_t *tree_s;
  */
 int tree_skel_init() {   
     tree_s = tree_create();
-    struct data_t *data5 = data_create2(strlen("ola"), "ola");
-    tree_put(tree_s, "bye", data5);
-    struct data_t *data6 = data_create2(strlen("adeus"), "adeus");
-    tree_put(tree_s, "ola", data6);
     if (tree_s == NULL) {
         return -1;
     }
@@ -59,7 +55,6 @@ int invoke(MessageT *msg) {
         case MESSAGE_T__OPCODE__OP_PUT:
             data = data_create2(msg->entry->data->datasize, msg->entry->data->data);
             if(tree_put(tree_s, msg->entry->key, data) == -1) {
-                //printf("Ocorreu um erro ao colocar a chave na árvore");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 return -1;
@@ -73,7 +68,6 @@ int invoke(MessageT *msg) {
 
         case MESSAGE_T__OPCODE__OP_DEL:
             if(tree_del(tree_s, msg->entry->key) == -1) {
-                //printf("Ocorreu um erro a apagar a chave, certifique-se de que a chave fornecidade existe na tree");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 return -1;
@@ -88,7 +82,6 @@ int invoke(MessageT *msg) {
         case MESSAGE_T__OPCODE__OP_GET:
             data = tree_get(tree_s, msg->entry->key);
             if(data == NULL) {
-                //printf("Ocorreu um erro na procura da chave, certifique-se de que a chave fornecidade existe na tree");
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 return -1;
@@ -98,7 +91,6 @@ int invoke(MessageT *msg) {
                 msg->c_type = MESSAGE_T__C_TYPE__CT_VALUE;
                 msg->entry->data->datasize = data->datasize;
                 msg->entry->data->data = data->data;
-                //data_destroy(data);
                 return 0;
                 break;
             }
@@ -129,21 +121,17 @@ int invoke(MessageT *msg) {
 
         case MESSAGE_T__OPCODE__OP_GETVALUES:
             valuesR = tree_get_values(tree_s);
-            char **tempvalues = malloc(sizeof(valuesR));
             if(valuesR == NULL) {
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 return -1;
                 break;
             } else {
-                for(int w = 0; w < tree_size(tree_s); w++){ 
-                    tempvalues[w] = (char*) valuesR[w];
-                }
                 msg->opcode = MESSAGE_T__OPCODE__OP_GETVALUES + 1;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_VALUES;
-                msg->n_data_s = treeSize;
-                msg->data_s = tempvalues;
-                msg->size = sizeof(tempvalues);
+                msg->n_data_s = treeSize + 1;
+                msg->data_s = (char**) valuesR;
+                msg->size = treeSize;
                 return 0;
                 break;
             }

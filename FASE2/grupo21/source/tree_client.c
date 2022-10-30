@@ -113,10 +113,8 @@ int main(int argc, char *argv[]) {
 			char **keysC = rtree_get_keys(tree);
 			if(keysC == NULL) {
 				printf("Ocorreu um erro na busca das keys");
-				//free(keysC); <---- Isto da um double free ???  se nunca dermos free temos um leak
 				printf("\n");
 			} else {
-				//free(keysC); <---- Isto da um double free ???  se nunca dermos free temos um leak
 				printf("\n");
 			}
 		} else if(strcmp(command, "getvalues") == 0){
