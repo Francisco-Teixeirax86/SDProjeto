@@ -287,12 +287,12 @@ static const ProtobufCFieldDescriptor message_t__field_descriptors[8] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "data",
+    "data_s",
     6,
     PROTOBUF_C_LABEL_REPEATED,
     PROTOBUF_C_TYPE_STRING,
-    offsetof(MessageT, n_data),
-    offsetof(MessageT, data),
+    offsetof(MessageT, n_data_s),
+    offsetof(MessageT, data_s),
     NULL,
     &protobuf_c_empty_string,
     0,             /* flags */
@@ -325,7 +325,7 @@ static const ProtobufCFieldDescriptor message_t__field_descriptors[8] =
 };
 static const unsigned message_t__field_indices_by_name[] = {
   1,   /* field[1] = c_type */
-  5,   /* field[5] = data */
+  5,   /* field[5] = data_s */
   2,   /* field[2] = entry */
   4,   /* field[4] = height */
   7,   /* field[7] = key */

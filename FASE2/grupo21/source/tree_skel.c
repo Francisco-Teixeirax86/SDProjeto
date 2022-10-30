@@ -43,13 +43,14 @@ int invoke(MessageT *msg) {
     MessageT__Opcode opCode = msg->opcode;
     char **keysR;
     void **valuesR;
+    int treeSize = tree_size(tree_s);
 
     switch(opCode) {
 
         case MESSAGE_T__OPCODE__OP_SIZE:
             msg->opcode = MESSAGE_T__OPCODE__OP_SIZE + 1;
             msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            msg->size = tree_size(tree_s);
+            msg->size = treeSize;
             return 0;
             break;
 
@@ -119,7 +120,7 @@ int invoke(MessageT *msg) {
             } else {
                 msg->opcode = MESSAGE_T__OPCODE__OP_GETKEYS + 1;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_KEYS;
-                msg->n_keys = tree_size(tree_s);
+                msg->n_keys = treeSize;
                 msg->keys = keysR;
                 msg->size = sizeof(keysR);
                 return 0;
@@ -129,19 +130,19 @@ int invoke(MessageT *msg) {
         case MESSAGE_T__OPCODE__OP_GETVALUES:
             valuesR = tree_get_values(tree_s);
             char **tempvalues = malloc(sizeof(valuesR));
-            if(valuesR == NULL){
+            if(valuesR == NULL) {
                 msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 return -1;
                 break;
             } else {
-                for(int w = 0; valuesR[w] != NULL; w++){
+                for(int w = 0; w < tree_size(tree_s); w++){ 
                     tempvalues[w] = (char*) valuesR[w];
                 }
                 msg->opcode = MESSAGE_T__OPCODE__OP_GETVALUES + 1;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_VALUES;
-                msg->n_keys = tree_size(tree_s);
-                msg->data = tempvalues;
+                msg->n_data_s = treeSize;
+                msg->data_s = tempvalues;
                 msg->size = sizeof(tempvalues);
                 return 0;
                 break;

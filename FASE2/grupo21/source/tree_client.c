@@ -28,7 +28,6 @@ int main(int argc, char *argv[]) {
 		fgets(input, 100, stdin);
 		command = strtok(input, " \n");
 		printf("\n");
-		//command = "getvalues";
 		if(strcmp(command, "size") == 0) {
 			if(rtree_size(tree) == -1) {
 				printf("Ocorreu um erro na busca de size");

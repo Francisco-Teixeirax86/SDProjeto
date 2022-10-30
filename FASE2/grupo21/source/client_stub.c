@@ -291,8 +291,8 @@ void **rtree_get_values(struct rtree_t *rtree) {
     message_t__init(msg);
     msg->opcode = MESSAGE_T__OPCODE__OP_GETVALUES;
     msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-    msg->n_data = 0;
-    msg->data = NULL;
+    msg->n_data_s = 0;
+    msg->data_s = NULL;
     msg->size = 0;
 
     MessageT *responseMsg = network_send_receive(rtree, msg); 
@@ -301,13 +301,13 @@ void **rtree_get_values(struct rtree_t *rtree) {
     } else {
         void **values = malloc(responseMsg->size + 1);
         char **tempvalues = malloc(responseMsg->size + 1);
-        tempvalues = responseMsg->data;
-        for(int i = 0; i  < responseMsg->n_keys; i++){
+        tempvalues = responseMsg->data_s;
+        for(int i = 0; i  < responseMsg->n_data_s; i++){
             values[i] = (void *) tempvalues[i];
         }
         printf("Os seguintes valores estão na árvore: ");
         printf("\n");
-        for(int i = 0;  i  < responseMsg->n_keys; i++){
+        for(int i = 0;  i  < responseMsg->n_data_s; i++){
             printf("%s", (char *) tempvalues[i]);
             printf("\n");
         }
