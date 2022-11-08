@@ -19,7 +19,7 @@ void server_signal(int);
  */
 void server_signal(int signal) {
 	network_server_close();
-    printf("Sinal de fecho de servidor.\n" );
+    printf("Sinal de fecho de servidor.\n");
     exit(1);
 }
 

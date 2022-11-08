@@ -23,7 +23,7 @@ void client_stub_signal(int);
  */
 void client_stub_signal(int signal) {
     free(tree_c);
-    printf("Sinal de fecho de cliente, pressionou Ctrl + C.\n" );
+    printf("Sinal de fecho de cliente, pressionou Ctrl + C.\n");
     exit(1);
 }
 

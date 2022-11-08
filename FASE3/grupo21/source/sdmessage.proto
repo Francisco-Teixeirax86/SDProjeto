@@ -32,7 +32,7 @@ message message_t
 
         int32 height = 5;
 
-        repeated string data_s = 6;
+        repeated bytes data_s = 6;
 
         repeated string keys = 7;
 

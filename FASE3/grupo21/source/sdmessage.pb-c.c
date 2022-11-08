@@ -290,11 +290,11 @@ static const ProtobufCFieldDescriptor message_t__field_descriptors[8] =
     "data_s",
     6,
     PROTOBUF_C_LABEL_REPEATED,
-    PROTOBUF_C_TYPE_STRING,
+    PROTOBUF_C_TYPE_BYTES,
     offsetof(MessageT, n_data_s),
     offsetof(MessageT, data_s),
     NULL,
-    &protobuf_c_empty_string,
+    NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },

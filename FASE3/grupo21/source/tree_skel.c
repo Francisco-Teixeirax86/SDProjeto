@@ -129,7 +129,7 @@ int invoke(MessageT *msg) {
             } else {
                 msg->opcode = MESSAGE_T__OPCODE__OP_GETVALUES + 1;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_VALUES;
-                msg->n_data_s = treeSize + 1;
+                msg->n_data_s = treeSize;
                 msg->data_s = (char**) valuesR;
                 msg->size = treeSize;
                 return 0;
