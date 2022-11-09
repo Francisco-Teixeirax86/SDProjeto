@@ -320,11 +320,11 @@ void **rtree_get_values(struct rtree_t *rtree) {
 */
 int rtree_verify(struct rtree_t *rtree, int op_n) {
     if (rtree == NULL) {
-        return NULL;
+        return -1;
     }
     MessageT *msg = (MessageT*) malloc(sizeof(MessageT));
     if(msg == NULL) {
-        return NULL;
+        return -1;
     }
     message_t__init(msg);
     msg->opcode = MESSAGE_T__OPCODE__OP_VERIFY;

@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
 	if(socket == -1) {
 		printf("Ocorreu um erro ao criar o server");
 	}
-	tree_skel_init();
 	network_main_loop(socket);
 	network_server_close();
 	tree_skel_destroy();
