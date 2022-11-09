@@ -74,16 +74,12 @@ int network_main_loop(int listening_socket) {
 	struct pollfd desc_set[NFDESC];
 	int i, nfds, kdfs;
 	signal(SIGINT, server_signal);
-	for (i = 0; i < NFDESC; i++)
-    		desc_set[i].fd = -1;
-
+	for (i = 0; i < NFDESC; i++) {
+		desc_set[i].fd = -1;
+	}
   	desc_set[0].fd = sockfd;
   	desc_set[0].events = POLLIN;
-
   	nfds = 1;
-
-
-
 	while (kdfs = poll(desc_set, nfds, 10) >= 0) {
 		if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
 			if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
@@ -92,8 +88,8 @@ int network_main_loop(int listening_socket) {
 			}
 		}
 		for (i = 1; i < nfds; i++) {
+			MessageT *msg = network_receive(desc_set[i].fd);
 			if (desc_set[i].revents & POLLIN) {
-				MessageT *msg = network_receive(desc_set[i].fd);
 				if (msg == NULL) {
 					close(desc_set[i].fd);
 					desc_set[i].fd = -1;
@@ -103,7 +99,6 @@ int network_main_loop(int listening_socket) {
 					network_send(desc_set[i].fd, msg);
 				}
 			}
-			MessageT *msg = network_receive(desc_set[i].fd);
 			if ((network_send(desc_set[i].fd, msg) == -1) || POLLHUP) {
 				close(desc_set[i].fd);
 				desc_set[i].fd = -1;
