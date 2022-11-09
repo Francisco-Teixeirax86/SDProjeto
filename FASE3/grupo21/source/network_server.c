@@ -4,11 +4,18 @@ Grupo 21:
 	Alexandre Rodrigues | FC54472
 	Afonso Soares | FC56314
 */
+
+#define NFDESC 4
+
+
 #include "inet.h"
 #include "tree_skel.h"
 #include "message-private.h"
 #include "network_server.h"
 #include <signal.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <errno.h>
 
 struct sockaddr_in server;
 int sockfd;
@@ -64,7 +71,49 @@ int network_main_loop(int listening_socket) {
 	int newsocketfd;
 	struct sockaddr_in client;
 	socklen_t size_client;
+	struct pollfd desc_set[NFDESC];
+	int i, nfds, kdfs;
 	signal(SIGINT, server_signal);
+	for (i = 0; i < NFDESC; i++)
+    		desc_set[i].fd = -1;
+
+  	desc_set[0].fd = sockfd;
+  	desc_set[0].events = POLLIN;
+
+  	nfds = 1;
+
+
+
+	while (kdfs = poll(desc_set, nfds, 10) >= 0) {
+		if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
+			if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
+          		desc_set[nfds].events = POLLIN;
+          		nfds++;
+			}
+		}
+		for (i = 1; i < nfds; i++) {
+			if (desc_set[i].revents & POLLIN) {
+				MessageT *msg = network_receive(desc_set[i].fd);
+				if (msg == NULL) {
+					close(desc_set[i].fd);
+					desc_set[i].fd = -1;
+					return -1;
+				} else {
+					invoke(msg);
+					network_send(desc_set[i].fd, msg);
+				}
+			}
+			MessageT *msg = network_receive(desc_set[i].fd);
+			if ((network_send(desc_set[i].fd, msg) == -1) || POLLHUP) {
+				close(desc_set[i].fd);
+				desc_set[i].fd = -1;
+				return -1;
+			}
+		}
+	}
+	close(listening_socket);
+  	return 0;
+	/*
 	while ((newsocketfd = accept(listening_socket,(struct sockaddr *) &client, &size_client)) != -1) {
 		
 		int receiving = 0;
@@ -87,6 +136,7 @@ int network_main_loop(int listening_socket) {
 		return 0;
     }
 	return 0;
+	*/
 }
 
 /* Esta função deve:

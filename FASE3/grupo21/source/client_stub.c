@@ -315,3 +315,28 @@ void **rtree_get_values(struct rtree_t *rtree) {
         return values;
     }
 }
+
+/* Verifica se a operação identificada por op_n foi executada.
+*/
+int rtree_verify(struct rtree_t *rtree, int op_n) {
+    if (rtree == NULL) {
+        return NULL;
+    }
+    MessageT *msg = (MessageT*) malloc(sizeof(MessageT));
+    if(msg == NULL) {
+        return NULL;
+    }
+    message_t__init(msg);
+    msg->opcode = MESSAGE_T__OPCODE__OP_VERIFY;
+    msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+
+    MessageT *responseMsg = network_send_receive(rtree, msg); 
+
+    if(responseMsg->opcode == MESSAGE_T__OPCODE__OP_ERROR) {
+        printf("Existe um erro na verificação da operação ou  a operação ainda não foi concluída");
+        return -1;
+    }
+    printf("A operação indetificada por %d foi executada", op_n);
+    return 0;
+
+}
