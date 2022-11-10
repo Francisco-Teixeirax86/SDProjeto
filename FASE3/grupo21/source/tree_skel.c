@@ -8,9 +8,16 @@ Grupo 21:
 #include "tree_skel-private.h"
 #include "sdmessage.pb-c.h"
 #include "tree.h"
+#include <pthread.h>
 
 struct tree_t *tree_s;
 struct op_proc *operation;
+int last_assigned;
+struct request_t *queue_head;
+pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER; 
+pthread_mutex_t tree_lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
+
 
 /* Inicia o skeleton da árvore.
 * O main() do servidor deve chamar esta função antes de poder usar a
@@ -21,8 +28,35 @@ struct op_proc *operation;
 */
 int tree_skel_init(int N) {  
     operation->max_proc = 0;
-    operation->in_progress = NULL;
+    operation->in_progress = 0;
+    last_assigned = 1;
+    queue_head = NULL;
     tree_s = tree_create();
+    int n_threads = atoi(N);
+    pthread_t thread[n_threads];
+    int thread_param[n_threads];
+    int r;
+
+    printf("main() a iniciar\n");
+
+/*
+    // Cria N threads
+    for (int i=0; i < n_threads; i++){
+        thread_param[i] = i+1;
+        if (pthread_create(&thread[i], NULL, &thread_impressao, (void) &thread_param[i]) != 0){
+            printf("\nThread %d não criada.\n", i);
+            exit(EXIT_FAILURE);
+        }
+    }
+*/
+    /* Join para N threads. */
+    for (int i=0; i < n_threads; i++){
+        if (pthread_join(thread[i], (void **) &r) != 0){
+            perror("\nErro no join.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     if (tree_s == NULL) {
         return -1;
     }
@@ -60,32 +94,65 @@ int invoke(MessageT *msg) {
         
 
         case MESSAGE_T__OPCODE__OP_PUT:
-            data = data_create2(msg->entry->data->datasize, msg->entry->data->data);
-            if(tree_put(tree_s, msg->entry->key, data) == -1) {
-                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
-                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-                return -1;
-                break;
-            } else {
-                msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
-                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-                return 0;
-                break;
-            }
 
+            printf("Nova operação de del com o seguinte ID: %d", last_assigned);
+            struct request_t *request= (struct request_t *) malloc(sizeof(struct request_t));
+            request->op_n = last_assigned;
+            last_assigned++;
+            request->op = 1;
+            request->key = msg->entry->key;
+            request->data = msg->entry->data->data;
+            request->msg = msg;
+
+            pthread_mutex_lock(&queue_lock);
+
+            if(queue_head == NULL){
+                queue_head = request;
+                request->next_request = NULL;
+            }
+            else{
+                struct request_t *tptr = queue_head;
+                while (tptr->next_request != NULL)
+                    tptr=tptr->next_request;
+                tptr->next_request=request; 
+                request->next_request=NULL;
+            } 
+            pthread_cond_signal(&queue_not_empty);
+            pthread_mutex_unlock(&queue_lock);
+            free(request);
+
+           return 0;
+           break;
         case MESSAGE_T__OPCODE__OP_DEL:
-            if(tree_del(tree_s, msg->entry->key) == -1) {
-                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
-                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-                return -1;
-                break;
-            } else {
-                msg->opcode = MESSAGE_T__OPCODE__OP_DEL + 1;
-                msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-                return 0;
-                break;
-            }
 
+            printf("Nova operação de put com o seguinte ID: %d", last_assigned);
+            struct request_t *request= (struct request_t *) malloc(sizeof(struct request_t));
+            request->op_n = last_assigned;
+            last_assigned++;
+            request->op = 0;
+            request->key = msg->entry->key;
+            request->data = NULL;
+            request->msg = msg;
+
+            pthread_mutex_lock(&queue_lock);
+
+            if(queue_head == NULL){
+                queue_head = request;
+                request->next_request = NULL;
+            }
+            else{
+                struct request_t *tptr = queue_head;
+                while (tptr->next_request != NULL)
+                    tptr=tptr->next_request;
+                tptr->next_request=request; 
+                request->next_request=NULL;
+            } 
+            pthread_cond_signal(&queue_not_empty);
+            pthread_mutex_unlock(&queue_lock);
+            free(request);
+
+           return 0;
+           break;
         case MESSAGE_T__OPCODE__OP_GET:
             data = tree_get(tree_s, msg->entry->key);
             if(data == NULL) {
@@ -177,5 +244,54 @@ int verify(int op_n) {
 /* Função da thread secundária que vai processar pedidos de escrita.
 */
 void * process_request (void *params) {
-    return NULL;
+
+    while(1){
+
+        pthread_mutex_lock(&queue_lock);
+
+        while(queue_head==NULL)
+            pthread_cond_wait(&queue_not_empty, &queue_lock);
+
+        struct request_t *request = queue_head;
+
+    if(request->op == 0){ //DELETE
+        pthread_mutex_lock(&tree_lock);  
+        if(tree_del(tree_s, request->key) == -1) {
+                request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+                request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                return -1;
+                break;
+            } else {
+                request->msg->opcode = MESSAGE_T__OPCODE__OP_DEL + 1;
+                request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+                if((request->op_n > operation->max_proc))
+                    operation->max_proc = request->op_n;
+
+                return 0;
+                break;
+            }
+        pthread_mutex_unlock(&tree_lock);
+    } else { //PUT
+        pthread_mutex_lock(&tree_lock); 
+        struct data_t *data;
+        data = data_create2(strlen(request->data), request->data);
+        if(tree_put(tree_s, request->key, data) == -1) {
+            request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+            request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+            return -1;
+            break;
+        } else {
+            request->msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
+            request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+            if((request->op_n > operation->max_proc))
+                operation->max_proc = request->op_n;
+            return 0;
+            break;
+        }
+        pthread_mutex_unlock(&tree_lock);
+    }
+
+        pthread_mutex_unlock(&queue_head);
+    }
+
 }

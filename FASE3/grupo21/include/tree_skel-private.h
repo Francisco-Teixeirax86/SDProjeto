@@ -9,10 +9,25 @@ Grupo 21:
 
 #include "sdmessage.pb-c.h"
 #include "tree.h"
+#include "sdmessage.pb-c.h"
+
 
 struct op_proc {
 	int max_proc; //regista o maior identificador das operações de escrita já concluídas
 	int* in_progress; //regista o identificador das operações de escrita que estão a ser atendidas por um conjunto de threads dedicadas às escritas
 };
+
+struct request_t {
+	int op_n; //o número da operação
+	int op; //a operação a executar. op=0 se for um delete, op=1 se for um put
+	char* key; //a chave a remover ou adicionar
+	char* data; // os dados a adicionar em caso de put, ou NULL em caso de delete
+	struct request_t *next_request;
+	MessageT *msg;
+//adicionar campo(s) necessário(s) para implementar fila do tipo produtor/consumidor
+};
+
+
+
 
 #endif
