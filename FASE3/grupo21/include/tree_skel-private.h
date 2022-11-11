@@ -28,6 +28,7 @@ struct request_t {
 };
 
 
+void *thread_impressao(void *params);
 
 
 #endif

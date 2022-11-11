@@ -35,6 +35,6 @@ int verify(int op_n);
 
 /* Função da thread secundária que vai processar pedidos de escrita.
 */
-void * process_request (void *params);
+void *process_request(void *params);
 
 #endif

@@ -9,6 +9,7 @@ Grupo 21:
 #include "sdmessage.pb-c.h"
 #include "tree.h"
 #include <pthread.h>
+#include <stdbool.h>
 
 struct tree_t *tree_s;
 struct op_proc *operation;
@@ -17,6 +18,7 @@ struct request_t *queue_head;
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER; 
 pthread_mutex_t tree_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
+int verify(int);
 
 
 /* Inicia o skeleton da árvore.
@@ -32,23 +34,21 @@ int tree_skel_init(int N) {
     last_assigned = 1;
     queue_head = NULL;
     tree_s = tree_create();
-    int n_threads = atoi(N);
+    int n_threads = N;
     pthread_t thread[n_threads];
     int thread_param[n_threads];
-    int r;
+    int *r;
 
     printf("main() a iniciar\n");
 
-/*
-    // Cria N threads
     for (int i=0; i < n_threads; i++){
         thread_param[i] = i+1;
-        if (pthread_create(&thread[i], NULL, &thread_impressao, (void) &thread_param[i]) != 0){
+        if (pthread_create(&thread[i], NULL, &thread_impressao, (void *) &thread_param[i]) != 0){
             printf("\nThread %d não criada.\n", i);
             exit(EXIT_FAILURE);
         }
     }
-*/
+
     /* Join para N threads. */
     for (int i=0; i < n_threads; i++){
         if (pthread_join(thread[i], (void **) &r) != 0){
@@ -60,6 +60,8 @@ int tree_skel_init(int N) {
     if (tree_s == NULL) {
         return -1;
     }
+
+    printf("main() a terminar \n");
     return 0;
 }
 
@@ -80,7 +82,7 @@ int invoke(MessageT *msg) {
     char **keysR;
     void **valuesR;
     int treeSize = tree_size(tree_s);
-    int op_n;
+    int op_n = -1;
 
     switch(opCode) {
 
@@ -96,60 +98,60 @@ int invoke(MessageT *msg) {
         case MESSAGE_T__OPCODE__OP_PUT:
 
             printf("Nova operação de del com o seguinte ID: %d", last_assigned);
-            struct request_t *request= (struct request_t *) malloc(sizeof(struct request_t));
-            request->op_n = last_assigned;
+            struct request_t *request1= (struct request_t *) malloc(sizeof(struct request_t));
+            request1->op_n = last_assigned;
             last_assigned++;
-            request->op = 1;
-            request->key = msg->entry->key;
-            request->data = msg->entry->data->data;
-            request->msg = msg;
+            request1->op = 1;
+            request1->key = msg->entry->key;
+            request1->data = msg->entry->data->data;
+            request1->msg = msg;
 
             pthread_mutex_lock(&queue_lock);
 
             if(queue_head == NULL){
-                queue_head = request;
-                request->next_request = NULL;
+                queue_head = request1;
+                request1->next_request = NULL;
             }
             else{
                 struct request_t *tptr = queue_head;
                 while (tptr->next_request != NULL)
                     tptr=tptr->next_request;
-                tptr->next_request=request; 
-                request->next_request=NULL;
+                tptr->next_request=request1; 
+                request1->next_request=NULL;
             } 
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
-            free(request);
+            free(request1);
 
            return 0;
            break;
         case MESSAGE_T__OPCODE__OP_DEL:
 
             printf("Nova operação de put com o seguinte ID: %d", last_assigned);
-            struct request_t *request= (struct request_t *) malloc(sizeof(struct request_t));
-            request->op_n = last_assigned;
+            struct request_t *request2= (struct request_t *) malloc(sizeof(struct request_t));
+            request2->op_n = last_assigned;
             last_assigned++;
-            request->op = 0;
-            request->key = msg->entry->key;
-            request->data = NULL;
-            request->msg = msg;
+            request2->op = 0;
+            request2->key = msg->entry->key;
+            request2->data = NULL;
+            request2->msg = msg;
 
             pthread_mutex_lock(&queue_lock);
 
             if(queue_head == NULL){
-                queue_head = request;
-                request->next_request = NULL;
+                queue_head = request2;
+                request2->next_request = NULL;
             }
             else{
                 struct request_t *tptr = queue_head;
                 while (tptr->next_request != NULL)
                     tptr=tptr->next_request;
-                tptr->next_request=request; 
-                request->next_request=NULL;
+                tptr->next_request=request2; 
+                request2->next_request=NULL;
             } 
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
-            free(request);
+            free(request2);
 
            return 0;
            break;
@@ -243,7 +245,7 @@ int verify(int op_n) {
 
 /* Função da thread secundária que vai processar pedidos de escrita.
 */
-void * process_request (void *params) {
+void *process_request(void *params) {
 
     while(1){
 
@@ -254,44 +256,57 @@ void * process_request (void *params) {
 
         struct request_t *request = queue_head;
 
-    if(request->op == 0){ //DELETE
-        pthread_mutex_lock(&tree_lock);  
-        if(tree_del(tree_s, request->key) == -1) {
+        if(request->op == 0){ //DELETE
+            pthread_mutex_lock(&tree_lock);  
+            if(tree_del(tree_s, request->key) == -1) {
+                    request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
+                    request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                    break;
+                } else {
+                    request->msg->opcode = MESSAGE_T__OPCODE__OP_DEL + 1;
+                    request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+                    if((request->op_n > operation->max_proc))
+                        operation->max_proc = request->op_n;
+                    break;
+                }
+            pthread_mutex_unlock(&tree_lock);
+        } else { //PUT
+            pthread_mutex_lock(&tree_lock); 
+            struct data_t *data;
+            data = data_create2(strlen(request->data), request->data);
+            if(tree_put(tree_s, request->key, data) == -1) {
                 request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-                return -1;
+                free(data);
                 break;
             } else {
-                request->msg->opcode = MESSAGE_T__OPCODE__OP_DEL + 1;
+                request->msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
                 request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
                 if((request->op_n > operation->max_proc))
                     operation->max_proc = request->op_n;
-
-                return 0;
+                free(data);
                 break;
             }
-        pthread_mutex_unlock(&tree_lock);
-    } else { //PUT
-        pthread_mutex_lock(&tree_lock); 
-        struct data_t *data;
-        data = data_create2(strlen(request->data), request->data);
-        if(tree_put(tree_s, request->key, data) == -1) {
-            request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
-            request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-            return -1;
-            break;
-        } else {
-            request->msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
-            request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
-            if((request->op_n > operation->max_proc))
-                operation->max_proc = request->op_n;
-            return 0;
-            break;
+            pthread_mutex_unlock(&tree_lock);
         }
-        pthread_mutex_unlock(&tree_lock);
-    }
 
-        pthread_mutex_unlock(&queue_head);
+        pthread_mutex_unlock(&queue_lock);
     }
+    return NULL;
+}
 
+
+void *thread_impressao(void *params){
+	int *thread_number = (int *) params;
+
+	printf("Thread %d a iniciar\n", *thread_number);
+
+		process_request(params);
+		
+		printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
+
+
+	printf("Thread %d a terminar\n", *thread_number);
+
+	return 0;
 }

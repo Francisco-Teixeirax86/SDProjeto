@@ -108,30 +108,6 @@ int network_main_loop(int listening_socket) {
 	}
 	close(listening_socket);
   	return 0;
-	/*
-	while ((newsocketfd = accept(listening_socket,(struct sockaddr *) &client, &size_client)) != -1) {
-		
-		int receiving = 0;
-		while(receiving == 0) {
-			MessageT *msg = network_receive(newsocketfd);
-
-			if(msg == NULL ) {
-				receiving = 1;
-				close(newsocketfd);
-				continue;
-			}
-
-			invoke(msg);
-
-			if((network_send(newsocketfd, msg) == -1)) {
-				close(newsocketfd);
-				return -1;
-			};
-		}
-		return 0;
-    }
-	return 0;
-	*/
 }
 
 /* Esta função deve:
