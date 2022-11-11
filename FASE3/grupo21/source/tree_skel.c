@@ -301,11 +301,11 @@ void *thread_impressao(void *params){
 
 	printf("Thread %d a iniciar\n", *thread_number);
 
-        printf("teste1");
+        //printf("teste1");
 
 		process_request(params);
 
-        printf("teste2");
+        //printf("teste2");
 		
 		printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
 
