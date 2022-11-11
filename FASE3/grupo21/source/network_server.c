@@ -69,11 +69,11 @@ int network_server_init(short port) {
  */
 int network_main_loop(int listening_socket) {
 	//int newsocketfd;
+	signal(SIGINT, server_signal);
 	struct sockaddr_in client;
 	socklen_t size_client;
 	struct pollfd desc_set[NFDESC];
 	int i, nfds, kdfs;
-	signal(SIGINT, server_signal);
 	for (i = 0; i < NFDESC; i++) {
 		desc_set[i].fd = -1;
 	}
@@ -81,28 +81,31 @@ int network_main_loop(int listening_socket) {
   	desc_set[0].events = POLLIN;
   	nfds = 1;
 	while ((kdfs = poll(desc_set, nfds, 10)) >= 0) {
-		if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
-			if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
-          		desc_set[nfds].events = POLLIN;
-          		nfds++;
+		if (kdfs > 0) {
+			if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
+				if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
+					desc_set[nfds].events = POLLIN;
+					nfds++;
+				}
 			}
-		}
-		for (i = 1; i < nfds; i++) {
-			MessageT *msg = network_receive(desc_set[i].fd);
-			if (desc_set[i].revents & POLLIN) {
-				if (msg == NULL) {
+			for (i = 1; i < nfds; i++) {
+				MessageT *msg = (MessageT*) malloc(sizeof(MessageT));
+				if (desc_set[i].revents & POLLIN) {
+					msg = network_receive(desc_set[i].fd);
+					if (msg == NULL) {
+						close(desc_set[i].fd);
+						desc_set[i].fd = -1;
+						return -1;
+					} else {
+						invoke(msg);
+						network_send(desc_set[i].fd, msg);
+					}
+				}
+				if ((network_send(desc_set[i].fd, msg) == -1) || POLLHUP) {
 					close(desc_set[i].fd);
 					desc_set[i].fd = -1;
 					return -1;
-				} else {
-					invoke(msg);
-					network_send(desc_set[i].fd, msg);
 				}
-			}
-			if ((network_send(desc_set[i].fd, msg) == -1) || POLLHUP) {
-				close(desc_set[i].fd);
-				desc_set[i].fd = -1;
-				return -1;
 			}
 		}
 	}

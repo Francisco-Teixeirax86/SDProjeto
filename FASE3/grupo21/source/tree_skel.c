@@ -29,9 +29,9 @@ int verify(int);
 * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
 */
 int tree_skel_init(int N) {  
-    operation->max_proc = 0;
-    operation->in_progress = 0;
-    last_assigned = 1;
+    //operation->max_proc = 0;
+    //operation->in_progress = 0;
+    last_assigned = 0;
     queue_head = NULL;
     tree_s = tree_create();
     int n_threads = N;
@@ -301,7 +301,11 @@ void *thread_impressao(void *params){
 
 	printf("Thread %d a iniciar\n", *thread_number);
 
+        printf("teste1");
+
 		process_request(params);
+
+        printf("teste2");
 		
 		printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
 
