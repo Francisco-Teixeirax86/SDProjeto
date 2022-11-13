@@ -11,6 +11,7 @@ Grupo 21:
 #include "entry.h"
 #include "network_client.h"
 #include "sdmessage.pb-c.h"
+#include "tree_skel-private.h"
 #include <signal.h>
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h

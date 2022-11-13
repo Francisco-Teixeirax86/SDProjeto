@@ -75,6 +75,8 @@ MessageT *network_send_receive(struct rtree_t * rtree, MessageT *msg) {
 
 	uint8_t *str = malloc(len_received);
   	read_all(rtree->sockfd, str, len_received);
+	//printf("%d \n", len_received);
+	//printf("%s \n", str);
 
 	msg = message_t__unpack(NULL, len_received, str);
 	free(str);

@@ -57,6 +57,8 @@ int tree_skel_init(int N) {
         }
     }
 
+    //printf("teste init");
+
     if (tree_s == NULL) {
         return -1;
     }
@@ -292,6 +294,7 @@ void *process_request(void *params) {
 
         pthread_mutex_unlock(&queue_lock);
     }
+    pthread_exit("Exit");
     return NULL;
 }
 
