@@ -17,6 +17,7 @@ void client_signal(int);
  * Função handler em caso de fecho inesperado do cliente
  */
 void client_signal(int signal) {
+	printf("\n");
     printf("Sinal de fecho de cliente.\n");
     exit(1);
 }

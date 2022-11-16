@@ -31,13 +31,13 @@ int verify(int);
 */
 int tree_skel_init(int N) {  
     operation = malloc(sizeof(struct op_proc));
-    operation->in_progress = malloc((sizeof(int))*N);
-    if(operation==NULL){
+    operation->in_progress = malloc(sizeof(int) * N);
+    if (operation == NULL) {
         free(operation->in_progress);
         free(operation);
     }
-    for(int i = 0; i < N; i++){
-        operation->in_progress[i]=0;
+    for (int i = 0; i < N; i++) {
+        operation->in_progress[i] = 0;
     } 
     operation->max_proc = 0;
     queue_head = NULL;

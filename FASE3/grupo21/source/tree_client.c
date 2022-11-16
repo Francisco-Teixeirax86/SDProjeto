@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 	int quit = 0;
 	while(quit == 0) {
 		char* command = malloc(100);
-		printf("Introduza um comamdo para ser executado sobre a árvore");
+		printf("Introduza um comando para ser executado sobre a árvore");
 		printf("\n");
 		char input [100];
 		fgets(input, 100, stdin);
