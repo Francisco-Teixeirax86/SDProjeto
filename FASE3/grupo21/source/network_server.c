@@ -76,8 +76,9 @@ int network_main_loop(int listening_socket) {
 	int i, nfds, kdfs;
 	for (i = 0; i < NFDESC; i++) {
 		desc_set[i].fd = -1;
+		desc_set[i].revents = 0;
 	}
-  	desc_set[0].fd = sockfd;
+  	desc_set[0].fd = listening_socket;
   	desc_set[0].events = POLLIN;
   	nfds = 1;
 	while ((kdfs = poll(desc_set, nfds, 10)) >= 0) {
@@ -89,9 +90,8 @@ int network_main_loop(int listening_socket) {
 				}
 			}
 			for (i = 1; i < nfds; i++) {
-				MessageT *msg = (MessageT*) malloc(sizeof(MessageT));
-				if (desc_set[i].revents & POLLIN) {
-					msg = network_receive(desc_set[i].fd);
+				if ((desc_set[i].revents & POLLIN) && desc_set[i].fd != -1) {
+					MessageT *msg = network_receive(desc_set[i].fd);
 					if (msg == NULL) {
 						close(desc_set[i].fd);
 						desc_set[i].fd = -1;
@@ -101,11 +101,19 @@ int network_main_loop(int listening_socket) {
 						network_send(desc_set[i].fd, msg);
 					}
 				}
-				if ((network_send(desc_set[i].fd, msg) == -1) || POLLHUP) {
+				
+				if ((desc_set[i].revents & POLLERR) || (desc_set[i].revents & POLLHUP)) {
 					close(desc_set[i].fd);
 					desc_set[i].fd = -1;
 					return -1;
 				}
+			}
+		}
+
+		for(int i = 1 ; i < nfds ;i++){
+			if(desc_set[i].fd == -1){
+				desc_set[i].fd = desc_set[nfds].fd;
+				nfds --;
 			}
 		}
 	}
@@ -121,7 +129,7 @@ int network_main_loop(int listening_socket) {
 MessageT *network_receive(int client_socket) {
 	int nbytes = 0;
 	int msg_size = 0;
-	if ((nbytes = read(client_socket, &msg_size, sizeof(int)))== -1) {
+	if ((nbytes = read_all(client_socket, &msg_size, sizeof(int)))== -1) {
 		close(client_socket);
 		return NULL;
 	}

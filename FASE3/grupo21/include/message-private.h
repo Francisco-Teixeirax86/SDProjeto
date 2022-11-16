@@ -13,11 +13,11 @@ Grupo 21:
 /*
  * Função que envia uma string inteira pela rede
 */
-int write_all(int sock, uint8_t *buf, int len);
+int write_all(int sock, void *buf, int len);
 
 /*
  * Função que recebe uma string inteira pela rede
 */
-int read_all(int sock, uint8_t *buf, int len);
+int read_all(int sock, void *buf, int len);
 
 #endif

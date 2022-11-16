@@ -9,7 +9,7 @@ Grupo 21:
 #include "message-private.h"
 #include <errno.h>
 
-int write_all(int sock, uint8_t *buf, int len) {
+int write_all(int sock, void *buf, int len) {
     int bufsize = len;
     while(len > 0) {
         int res = write(sock, buf, len);
@@ -24,7 +24,7 @@ int write_all(int sock, uint8_t *buf, int len) {
     return bufsize;
 }
 
-int read_all(int sock, uint8_t *buf, int len) {
+int read_all(int sock, void *buf, int len) {
     int res;
     int readlen = 0;
     while (readlen < len) {

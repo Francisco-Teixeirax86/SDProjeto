@@ -37,8 +37,7 @@ int tree_skel_init(int N) {
     int n_threads = N;
     pthread_t thread[n_threads];
     int thread_param[n_threads];
-    int *r;
-
+    
     printf("main() a iniciar\n");
 
     for (int i=0; i < n_threads; i++){
@@ -48,22 +47,11 @@ int tree_skel_init(int N) {
             exit(EXIT_FAILURE);
         }
     }
-
-    /* Join para N threads. */
-    for (int i=0; i < n_threads; i++){
-        if (pthread_join(thread[i], (void **) &r) != 0){
-            perror("\nErro no join.\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    //printf("teste init");
-
+   
     if (tree_s == NULL) {
         return -1;
     }
 
-    printf("main() a terminar \n");
     return 0;
 }
 
