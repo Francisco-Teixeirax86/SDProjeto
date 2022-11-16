@@ -5,7 +5,7 @@ Grupo 21:
 	Afonso Soares | FC56314
 */
 
-#define NFDESC 4
+#define NFDESC 10
 
 
 #include "inet.h"

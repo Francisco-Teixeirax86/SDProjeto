@@ -8,6 +8,7 @@ Grupo 21:
 #include "tree_skel-private.h"
 #include "sdmessage.pb-c.h"
 #include "tree.h"
+#include "entry.h"
 #include <pthread.h>
 #include <stdbool.h>
 
@@ -29,17 +30,23 @@ int verify(int);
 * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
 */
 int tree_skel_init(int N) {  
-    //operation->max_proc = 0;
-    //operation->in_progress = 0;
-    last_assigned = 0;
+    operation = malloc(sizeof(struct op_proc));
+    operation->in_progress = malloc((sizeof(int))*N);
+    if(operation==NULL){
+        free(operation->in_progress);
+        free(operation);
+    }
+    for(int i=0;i<N;i++){
+        operation->in_progress[i]=0;
+    } 
+    operation->max_proc = 0;
     queue_head = NULL;
     tree_s = tree_create();
     int n_threads = N;
     pthread_t thread[n_threads];
     int thread_param[n_threads];
-    
-    printf("main() a iniciar\n");
 
+    printf("main() a iniciar\n");
     for (int i=0; i < n_threads; i++){
         thread_param[i] = i+1;
         if (pthread_create(&thread[i], NULL, &thread_impressao, (void *) &thread_param[i]) != 0){
@@ -48,6 +55,9 @@ int tree_skel_init(int N) {
         }
     }
    
+    struct data_t *datateste = data_create2(sizeof("adeus"), "adeus");
+    tree_put(tree_s, "ola", datateste);
+
     if (tree_s == NULL) {
         return -1;
     }
@@ -108,7 +118,16 @@ int invoke(MessageT *msg) {
                     tptr=tptr->next_request;
                 tptr->next_request=request1; 
                 request1->next_request=NULL;
-            } 
+            }
+            int o = 0;
+            while (1)
+            {
+                if((operation->in_progress)[o] == 0){
+                    (operation->in_progress)[o] = request1->op_n;
+                    break; 
+                }
+                if(o == 3) o = 0;
+            }
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
             free(request1);
@@ -138,6 +157,15 @@ int invoke(MessageT *msg) {
                     tptr=tptr->next_request;
                 tptr->next_request=request2; 
                 request2->next_request=NULL;
+            }
+            int p = 0;
+            while (1)
+            {
+                if((operation->in_progress)[p] == 0){
+                    (operation->in_progress)[p] = request2->op_n;
+                    break; 
+                }
+                if(p == 3) p= 0;
             } 
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
@@ -260,6 +288,14 @@ void *process_request(void *params) {
                     break;
                 }
             pthread_mutex_unlock(&tree_lock);
+            int w = 0;
+            while ((operation->in_progress)[w] != -1)
+            {
+                if((operation->in_progress)[w] == request->op_n){
+                    (operation->in_progress)[w] = -1;
+                }
+                w++;
+            }
         } else { //PUT
             pthread_mutex_lock(&tree_lock); 
             struct data_t *data;
@@ -278,6 +314,14 @@ void *process_request(void *params) {
                 break;
             }
             pthread_mutex_unlock(&tree_lock);
+            int l = 0;
+            while ((operation->in_progress)[l] != -1)
+            {
+                if((operation->in_progress)[l] == request->op_n){
+                    (operation->in_progress)[l] = -1;
+                }
+                l++;
+            }
         }
 
         pthread_mutex_unlock(&queue_lock);
@@ -292,14 +336,9 @@ void *thread_impressao(void *params){
 
 	printf("Thread %d a iniciar\n", *thread_number);
 
-        //printf("teste1");
-
 		process_request(params);
-
-        //printf("teste2");
 		
 		printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
-
 
 	printf("Thread %d a terminar\n", *thread_number);
 
