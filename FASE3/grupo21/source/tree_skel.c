@@ -36,7 +36,7 @@ int tree_skel_init(int N) {
         free(operation->in_progress);
         free(operation);
     }
-    for(int i=0;i<N;i++){
+    for(int i = 0; i < N; i++){
         operation->in_progress[i]=0;
     } 
     operation->max_proc = 0;
@@ -119,15 +119,6 @@ int invoke(MessageT *msg) {
                 tptr->next_request=request1; 
                 request1->next_request=NULL;
             }
-            int o = 0;
-            while (1)
-            {
-                if((operation->in_progress)[o] == 0){
-                    (operation->in_progress)[o] = request1->op_n;
-                    break; 
-                }
-                if(o == 3) o = 0;
-            }
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
             free(request1);
@@ -158,15 +149,6 @@ int invoke(MessageT *msg) {
                 tptr->next_request=request2; 
                 request2->next_request=NULL;
             }
-            int p = 0;
-            while (1)
-            {
-                if((operation->in_progress)[p] == 0){
-                    (operation->in_progress)[p] = request2->op_n;
-                    break; 
-                }
-                if(p == 3) p= 0;
-            } 
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
             free(request2);
@@ -273,28 +255,36 @@ void *process_request(void *params) {
             pthread_cond_wait(&queue_not_empty, &queue_lock);
 
         struct request_t *request = queue_head;
+        for (int k = 0; k < sizeof(operation->in_progress); k++)
+        {
+            if ((operation->in_progress)[k] == 0)
+            {
+                operation->in_progress[k] = request->op_n;
+                break;
+            }
+        }
+        
 
         if(request->op == 0){ //DELETE
             pthread_mutex_lock(&tree_lock);  
             if(tree_del(tree_s, request->key) == -1) {
                     request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                     request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-                    break;
+                    if((request->op_n > operation->max_proc))
+                        operation->max_proc = request->op_n;
                 } else {
                     request->msg->opcode = MESSAGE_T__OPCODE__OP_DEL + 1;
                     request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
                     if((request->op_n > operation->max_proc))
                         operation->max_proc = request->op_n;
-                    break;
                 }
             pthread_mutex_unlock(&tree_lock);
-            int w = 0;
-            while ((operation->in_progress)[w] != -1)
-            {
-                if((operation->in_progress)[w] == request->op_n){
-                    (operation->in_progress)[w] = -1;
+            for (int k = 0; k < sizeof(operation->in_progress); k++) {
+                if ((operation->in_progress)[k] == request->op_n)
+                {
+                    operation->in_progress[k] = 0;
+                    break;
                 }
-                w++;
             }
         } else { //PUT
             pthread_mutex_lock(&tree_lock); 
@@ -303,24 +293,23 @@ void *process_request(void *params) {
             if(tree_put(tree_s, request->key, data) == -1) {
                 request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
+                if((request->op_n > operation->max_proc))
+                    operation->max_proc = request->op_n;
                 free(data);
-                break;
             } else {
                 request->msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
                 request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
                 if((request->op_n > operation->max_proc))
                     operation->max_proc = request->op_n;
                 free(data);
-                break;
             }
             pthread_mutex_unlock(&tree_lock);
-            int l = 0;
-            while ((operation->in_progress)[l] != -1)
-            {
-                if((operation->in_progress)[l] == request->op_n){
-                    (operation->in_progress)[l] = -1;
+            for (int k = 0; k < sizeof(operation->in_progress); k++) {
+                if ((operation->in_progress)[k] == request->op_n)
+                {
+                    operation->in_progress[k] = 0;
+                    break;
                 }
-                l++;
             }
         }
 
