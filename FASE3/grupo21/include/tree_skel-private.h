@@ -22,6 +22,7 @@ struct request_t {
 	int op; //a operação a executar. op=0 se for um delete, op=1 se for um put
 	char* key; //a chave a remover ou adicionar
 	char* data; // os dados a adicionar em caso de put, ou NULL em caso de delete
+	int datasize;
 	struct request_t *next_request;
 	MessageT *msg;
 //adicionar campo(s) necessário(s) para implementar fila do tipo produtor/consumidor

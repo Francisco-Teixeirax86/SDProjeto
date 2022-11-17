@@ -60,8 +60,8 @@ int tree_skel_init(int N) {
         }
     }
    
-    struct data_t *datateste = data_create2(sizeof("adeus"), "adeus");
-    tree_put(tree_s, "ola", datateste);
+    //struct data_t *datateste = data_create2(sizeof("adeus"), "adeus");
+    //tree_put(tree_s, "ola", datateste);
 
     if (tree_s == NULL) {
         return -1;
@@ -111,6 +111,7 @@ int invoke(MessageT *msg) {
             request1->op = 1;
             request1->key = msg->entry->key;
             request1->data = msg->entry->data->data;
+            request1->datasize = msg->entry->data->datasize;
             request1->msg = msg;
 
             pthread_mutex_lock(&queue_lock);
@@ -281,25 +282,23 @@ void *process_request(void *params) {
         } else { //PUT
             pthread_mutex_lock(&tree_lock); 
             struct data_t *data;
-            data = data_create2(strlen(request->data), request->data);
+            data = data_create2(request->datasize, request->data);
             if(tree_put(tree_s, request->key, data) == -1) {
                 request->msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 request->msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 if((request->op_n > operation->max_proc))
                     operation->max_proc = request->op_n;
-                free(data);
             } else {
                 request->msg->opcode = MESSAGE_T__OPCODE__OP_PUT + 1;
                 request->msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
                 if((request->op_n > operation->max_proc))
                     operation->max_proc = request->op_n;
-                free(data);
             }
             pthread_mutex_unlock(&tree_lock);
         }
         pthread_mutex_unlock(&queue_lock);
     }
-    pthread_exit("Exit");
+    pthread_exit(NULL);
     return NULL;
 }
 
