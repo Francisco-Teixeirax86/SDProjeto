@@ -19,6 +19,8 @@ struct request_t *queue_head;
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER; 
 pthread_mutex_t tree_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
+pthread_t thread;
+int *thread_param;
 int thread_number;
 int verify(int);
 
@@ -46,13 +48,13 @@ int tree_skel_init(int N) {
     queue_head = NULL;
     tree_s = tree_create();
     int n_threads = N;
-    pthread_t thread[n_threads];
-    int thread_param[n_threads];
+    thread = (pthread_t) malloc(sizeof(pthread_t) * n_threads);
+    thread_param = malloc(sizeof(int) * n_threads);
 
     printf("main() a iniciar\n");
     for (int i=0; i < n_threads; i++){
         thread_param[i] = i+1;
-        if (pthread_create(&thread[i], NULL, &thread_impressao, (void *) &thread_param[i]) != 0){
+        if (pthread_create(&thread+i, NULL, &thread_impressao, (void *) &thread_param[i]) != 0){
             printf("\nThread %d não criada.\n", i);
             exit(EXIT_FAILURE);
         }
@@ -126,7 +128,6 @@ int invoke(MessageT *msg) {
             }
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
-            free(request1);
 
            return 0;
            break;
@@ -156,7 +157,6 @@ int invoke(MessageT *msg) {
             }
             pthread_cond_signal(&queue_not_empty);
             pthread_mutex_unlock(&queue_lock);
-            free(request2);
 
            return 0;
            break;
@@ -252,6 +252,7 @@ int verify(int op_n) {
 */
 void *process_request(void *params) {
 
+    int *thread_number = (int *) params;
     while(1){
 
         pthread_mutex_lock(&queue_lock);
@@ -260,14 +261,7 @@ void *process_request(void *params) {
             pthread_cond_wait(&queue_not_empty, &queue_lock);
 
         struct request_t *request = queue_head;
-        for (int k = 0; k < thread_number; k++)
-        {
-            if ((operation->in_progress)[k] == 0)
-            {
-                operation->in_progress[k] = request->op_n;
-                break;
-            }
-        }
+        operation->in_progress[*thread_number-1] = request->op_n;
         
 
         if(request->op == 0){ //DELETE
@@ -284,13 +278,6 @@ void *process_request(void *params) {
                         operation->max_proc = request->op_n;
                 }
             pthread_mutex_unlock(&tree_lock);
-            for (int k = 0; k < thread_number; k++) {
-                if ((operation->in_progress)[k] == request->op_n)
-                {
-                    operation->in_progress[k] = 0;
-                    break;
-                }
-            }
         } else { //PUT
             pthread_mutex_lock(&tree_lock); 
             struct data_t *data;
@@ -309,15 +296,7 @@ void *process_request(void *params) {
                 free(data);
             }
             pthread_mutex_unlock(&tree_lock);
-            for (int k = 0; k < thread_number; k++) {
-                if ((operation->in_progress)[k] == request->op_n)
-                {
-                    operation->in_progress[k] = 0;
-                    break;
-                }
-            }
         }
-
         pthread_mutex_unlock(&queue_lock);
     }
     pthread_exit("Exit");
