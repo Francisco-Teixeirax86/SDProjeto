@@ -24,7 +24,6 @@ struct request_t {
 	char* data; // os dados a adicionar em caso de put, ou NULL em caso de delete
 	int datasize;
 	struct request_t *next_request;
-	MessageT *msg;
 //adicionar campo(s) necessário(s) para implementar fila do tipo produtor/consumidor
 };
 

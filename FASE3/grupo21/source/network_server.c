@@ -69,7 +69,6 @@ int network_server_init(short port) {
  * - Enviar a resposta ao cliente usando a função network_send.
  */
 int network_main_loop(int listening_socket) {
-	//int newsocketfd;
 	signal(SIGINT, server_signal);
 	struct sockaddr_in client;
 	socklen_t size_client;

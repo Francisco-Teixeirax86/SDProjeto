@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
 					printf("\n");
 				}
 				data_destroy(data5);
+				free(entry);
 			
 				printf("\n");
 			} else {
@@ -149,6 +150,7 @@ int main(int argc, char *argv[]) {
 			printf("\n");
 			printf("quit");
 		}
+		
  	}
 	return 0;
 }

@@ -95,7 +95,8 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry) {
         message_t__free_unpacked(msg, NULL);
         return -1;
     }
-    msg->entry->key = entry->key;
+    msg->entry->key = malloc(sizeof(entry->key)+1);
+    strcpy(msg->entry->key, entry->key);
     msg->entry->data = (DataT*) malloc (sizeof(DataT));
     data_t__init(msg->entry->data);
     if(msg->entry->data == NULL) {
@@ -111,9 +112,13 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry) {
     if(responseMsg == NULL) {
         return -1;
     }
-    printf("Data com key %s e tamanho %d adicionada com sucesso a tree", responseMsg->entry->key, responseMsg->entry->data->datasize);
+    printf("O comando put com número de operação %d será executado em breve", responseMsg->size);
     printf("\n");
     message_t__free_unpacked(responseMsg, NULL);
+    free(msg->entry->key);
+    free(msg->entry->data);
+    free(msg->entry);
+    free(msg);
     return 0;
 }
 
@@ -156,6 +161,7 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key) {
     message_t__free_unpacked(responseMsg, NULL);
     printf("Na key %s foi encontrada uma data com tamanho %d", key, return_data->datasize);
     printf("\n");
+    free(msg);
     return return_data;
 }
 
@@ -184,13 +190,15 @@ int rtree_del(struct rtree_t *rtree, char *key) {
 
     MessageT *responseMsg = network_send_receive(rtree, msg);
     if(responseMsg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
-        printf("Foi apagado com sucesso o elemento com a key %s", key);
+        printf("O comando del com número de operação %d será executado em breve", responseMsg->size);
         printf("\n");
     }
     printf("\n");
     if(responseMsg == NULL) {
         return -1;
     }
+    free(msg->entry);
+    free(msg);
     return 0;
 }
 
@@ -215,7 +223,9 @@ int rtree_size(struct rtree_t *rtree) {
 
     printf("O nº de elementos da árvore é: %d\n", responseMsg->size);
     printf("\n");
-    return responseMsg->size;
+    int temp = responseMsg->size;
+    free(msg);
+    return temp;
 }
 
 /* Função que devolve a altura da árvore.
@@ -239,7 +249,9 @@ int rtree_height(struct rtree_t *rtree) {
     }
     printf("A altura da árvore é: %d\n", responseMsg->height);
     printf("\n");
-    return responseMsg->height;
+    int temp2 = responseMsg->height;
+    free(msg);
+    return temp2;
 }
 
 /* Devolve um array de char* com a cópia de todas as keys da árvore,
@@ -263,6 +275,8 @@ char **rtree_get_keys(struct rtree_t *rtree) {
 
     MessageT *responseMsg = network_send_receive(rtree, msg); 
     if(responseMsg == NULL) {
+        free(msg);
+        free(responseMsg);
         return NULL;
     } else {
         char **keys = malloc(responseMsg->size + 1);
@@ -274,6 +288,7 @@ char **rtree_get_keys(struct rtree_t *rtree) {
             printf("\n");
         }
         message_t__free_unpacked(responseMsg, NULL);
+        free(msg);
         return keys;
     }
 }
