@@ -19,6 +19,7 @@ struct request_t *queue_head;
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER; 
 pthread_mutex_t tree_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
+int thread_number;
 int verify(int);
 
 
@@ -32,6 +33,7 @@ int verify(int);
 int tree_skel_init(int N) {  
     operation = malloc(sizeof(struct op_proc));
     operation->in_progress = malloc(sizeof(int) * N);
+    thread_number = N;
     if (operation == NULL) {
         free(operation->in_progress);
         free(operation);
@@ -40,6 +42,7 @@ int tree_skel_init(int N) {
         operation->in_progress[i] = 0;
     } 
     operation->max_proc = 0;
+    last_assigned = 1;
     queue_head = NULL;
     tree_s = tree_create();
     int n_threads = N;
@@ -68,6 +71,8 @@ int tree_skel_init(int N) {
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */
 void tree_skel_destroy() {
+    free(operation->in_progress);
+    free(operation);
     tree_destroy(tree_s);
 }
 
@@ -97,7 +102,7 @@ int invoke(MessageT *msg) {
 
         case MESSAGE_T__OPCODE__OP_PUT:
 
-            printf("Nova operação de del com o seguinte ID: %d", last_assigned);
+            printf("Nova operação de put com o seguinte ID: %d", last_assigned);
             struct request_t *request1= (struct request_t *) malloc(sizeof(struct request_t));
             request1->op_n = last_assigned;
             last_assigned++;
@@ -255,7 +260,7 @@ void *process_request(void *params) {
             pthread_cond_wait(&queue_not_empty, &queue_lock);
 
         struct request_t *request = queue_head;
-        for (int k = 0; k < sizeof(operation->in_progress); k++)
+        for (int k = 0; k < thread_number; k++)
         {
             if ((operation->in_progress)[k] == 0)
             {
@@ -279,7 +284,7 @@ void *process_request(void *params) {
                         operation->max_proc = request->op_n;
                 }
             pthread_mutex_unlock(&tree_lock);
-            for (int k = 0; k < sizeof(operation->in_progress); k++) {
+            for (int k = 0; k < thread_number; k++) {
                 if ((operation->in_progress)[k] == request->op_n)
                 {
                     operation->in_progress[k] = 0;
@@ -304,7 +309,7 @@ void *process_request(void *params) {
                 free(data);
             }
             pthread_mutex_unlock(&tree_lock);
-            for (int k = 0; k < sizeof(operation->in_progress); k++) {
+            for (int k = 0; k < thread_number; k++) {
                 if ((operation->in_progress)[k] == request->op_n)
                 {
                     operation->in_progress[k] = 0;
