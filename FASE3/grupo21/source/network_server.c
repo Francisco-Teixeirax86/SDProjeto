@@ -78,7 +78,6 @@ int network_main_loop(int listening_socket) {
 	struct sockaddr_in client;
 	socklen_t size_client;
 	struct pollfd desc_set[NFDESC];
-	//malloc para desc_Set
 	int i, nfds, kdfs;
 	for (i = 0; i < NFDESC; i++) {
 		desc_set[i].fd = -1;
@@ -86,11 +85,8 @@ int network_main_loop(int listening_socket) {
 	}
   	desc_set[0].fd = listening_socket;
   	desc_set[0].events = POLLIN;
-  	nfds = 1; //incrementar para 4 para suportar 4 clientes
-	//dar realloc no array para incrementar o tamanho de desc_set
-	//verificar limite do nfds
-	//ver duplos close nos fds
-		while ((kdfs = poll(desc_set, nfds, 10)) >= 0) { //falta sinal fechar servidor (ctrl + C) 
+  	nfds = 1;
+		while (((kdfs = (poll(desc_set, nfds, 10)) >= 0)) || signal(SIGINT, server_signal)) {
 			if (kdfs > 0) {
 				if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
 					if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
@@ -102,28 +98,17 @@ int network_main_loop(int listening_socket) {
 					if ((desc_set[i].revents & POLLIN) && desc_set[i].fd != -1) {
 						MessageT *msg = network_receive(desc_set[i].fd);
 						if (msg == NULL) {
-							printf("message null");
-							fflush(stdout);
-							//close(desc_set[i].fd);
 							desc_set[i].fd = -1;
-							//return -1;
 							free(msg);
 						} else {
-							printf("message not null");
-							fflush(stdout);
 							invoke(msg);
 							network_send(desc_set[i].fd, msg);
 						}
-						//free(msg);
 					}
 					
 					if ((desc_set[i].revents & POLLERR) || (desc_set[i].revents & POLLHUP)) {
-						printf("Entrou aqui");
-						fflush(stdout);
 						close(desc_set[i].fd);
 						desc_set[i].fd = -1;
-						//return -1;
-						//printf("Entrou aqui");
 					}
 				}
 			}
@@ -135,8 +120,6 @@ int network_main_loop(int listening_socket) {
 				}
 			}
 		}
-		printf("Saiu do while");
-		fflush(stdout);
 	close(listening_socket);
   	return 0;
 }

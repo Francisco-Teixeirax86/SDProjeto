@@ -298,39 +298,8 @@ char **rtree_get_keys(struct rtree_t *rtree) {
  */
 
 void **rtree_get_values(struct rtree_t *rtree) {
-    if (rtree == NULL) {
-        return NULL;
-    }
-    MessageT *msg = (MessageT*) malloc(sizeof(MessageT));
-    if(msg == NULL) {
-        return NULL;
-    }
-    message_t__init(msg);
-    msg->opcode = MESSAGE_T__OPCODE__OP_GETVALUES;
-    msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
-    msg->n_data_s = 0;
-    msg->data_s = NULL;
-    msg->size = 0;
-
-    MessageT *responseMsg = network_send_receive(rtree, msg); 
-    if(responseMsg == NULL) {
-        return NULL;
-    } else {
-        void **values = malloc(responseMsg->size + 1);
-        char **tempvalues = malloc(responseMsg->size + 1);
-        tempvalues = responseMsg->data_s;
-        for(int i = 0; i  < responseMsg->n_data_s; i++){
-            values[i] = (void *) tempvalues[i];
-        }
-        printf("Os seguintes valores estão na árvore: ");
-        printf("\n");
-        for(int i = 0;  i  < responseMsg->n_data_s; i++){
-            printf("%s", (char *) tempvalues[i]);
-            printf("\n");
-        }
-        message_t__free_unpacked(responseMsg, NULL);
-        return values;
-    }
+    printf("Esta função não foi implementada \n");
+    return NULL;
 }
 
 /* Verifica se a operação identificada por op_n foi executada.
@@ -346,10 +315,11 @@ int rtree_verify(struct rtree_t *rtree, int op_n) {
     message_t__init(msg);
     msg->opcode = MESSAGE_T__OPCODE__OP_VERIFY;
     msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
+    msg->size = op_n;
 
     MessageT *responseMsg = network_send_receive(rtree, msg); 
 
-    if(responseMsg->opcode == MESSAGE_T__OPCODE__OP_ERROR) {
+    if(responseMsg == NULL) {
         printf("Existe um erro na verificação da operação ou  a operação ainda não foi concluída");
         return -1;
     }

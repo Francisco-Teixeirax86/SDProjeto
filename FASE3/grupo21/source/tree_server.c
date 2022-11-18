@@ -7,6 +7,7 @@ Grupo 21:
 #include "inet.h"
 #include "network_server.h"
 #include "tree_skel.h"
+#include "tree_skel-private.h"
 
 
 struct rtree_t *tree;

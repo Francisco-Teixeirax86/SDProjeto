@@ -28,8 +28,9 @@ struct request_t {
 };
 
 
+/*
+* Função que imprime e corre o processo das threads.
+*/
 void *thread_impressao(void *params);
-
-void termina();
 
 #endif

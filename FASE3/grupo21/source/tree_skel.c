@@ -71,12 +71,6 @@ int tree_skel_init(int N) {
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */
 void tree_skel_destroy() {
-    for(int i = 0; i < thread_number; i++) {
-        if(pthread_join(thread[i], (void **) &r) != 0) {
-            perror("\nErro no join.\n");
-            exit(EXIT_FAILURE);
-        }
-    }
     free(thread_param);
     free(operation->in_progress);
     free(operation);
@@ -94,7 +88,6 @@ int invoke(MessageT *msg) {
     char **keysR;
     void **valuesR;
     int treeSize = tree_size(tree_s);
-    int op_n = -1;
 
     switch(opCode) {
 
@@ -249,8 +242,8 @@ int invoke(MessageT *msg) {
             }
 
         case MESSAGE_T__OPCODE__OP_VERIFY:
-            if(verify(op_n) == 0) {
-                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR; //não é verify + 1?
+            if(verify(msg->size) == 0) {
+                msg->opcode = MESSAGE_T__OPCODE__OP_ERROR;
                 msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
                 return -1;
                 break;
@@ -272,9 +265,13 @@ int invoke(MessageT *msg) {
 /* Verifica se a operação identificada por op_n foi executada.
 */
 int verify(int op_n) {
-    if (op_n < operation->max_proc) {       
+    if (op_n <= operation->max_proc) { 
         return 1;
-    } else {
+    } 
+    else if (op_n > operation->max_proc) {
+        return 0;
+    }
+    else {
         for(int k = 0; k < thread_number; k++) {
             if(operation->in_progress[k] == op_n) {
                 return 1;
@@ -335,15 +332,12 @@ void *process_request(void *params) {
     return NULL;
 }
 
-
 void *thread_impressao(void *params){
 	int *thread_number = (int *) params;
 
 	printf("Thread %d a iniciar\n", *thread_number);
 
 		process_request(params);
-		
-		//printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
 
 	printf("Thread %d a terminar\n", *thread_number);
 
