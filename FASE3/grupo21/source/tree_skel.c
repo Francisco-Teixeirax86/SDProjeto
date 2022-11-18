@@ -272,9 +272,14 @@ int invoke(MessageT *msg) {
 /* Verifica se a operação identificada por op_n foi executada.
 */
 int verify(int op_n) {
-    if (op_n < operation->max_proc) {
+    if (op_n < operation->max_proc) {       
         return 1;
     } else {
+        for(int k = 0; k < thread_number; k++) {
+            if(operation->in_progress[k] == op_n) {
+                return 1;
+            }
+        }
         return 0;
     }
 }

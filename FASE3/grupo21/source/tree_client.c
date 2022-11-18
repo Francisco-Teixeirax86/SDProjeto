@@ -130,6 +130,11 @@ int main(int argc, char *argv[]) {
 			rtree_disconnect(tree);
 			quit = 1;
 			printf("\n");
+		}else if(strcmp(command, "verify") == 0){
+			char *number_temp = strtok(NULL, " ");
+			char *number = strtok(number_temp, "\n");
+			rtree_verify(tree, atoi(number));
+			printf("\n");
 
 		} else {
 			printf("Introduza um comando da list: ");
@@ -149,6 +154,9 @@ int main(int argc, char *argv[]) {
 			printf("getvalues");
 			printf("\n");
 			printf("quit");
+			printf("\n");
+			printf("verify <op_n>");
+
 		}
 		
  	}
