@@ -19,7 +19,7 @@ struct request_t *queue_head;
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER; 
 pthread_mutex_t tree_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
-pthread_t thread;
+pthread_t *thread;
 int *thread_param;
 int thread_number;
 int *r;
@@ -49,13 +49,13 @@ int tree_skel_init(int N) {
     queue_head = NULL;
     tree_s = tree_create();
     int n_threads = N;
-    thread = (pthread_t) malloc(sizeof(pthread_t) * n_threads); //NAO LIBERTADO FALTA JOIN
+    thread = (pthread_t*) malloc(sizeof(pthread_t) * n_threads); //NAO LIBERTADO FALTA JOIN
     thread_param = malloc(sizeof(int) * n_threads); //NAO LIBERTADO FALTA JOIN
 
     printf("main() a iniciar\n");
     for (int i=0; i < n_threads; i++){
         thread_param[i] = i+1;
-        if (pthread_create(&thread+i, NULL, &thread_impressao, (void *) &thread_param[i]) != 0){
+        if (pthread_create(&thread[i], NULL, &thread_impressao, (void *) &thread_param[i]) != 0){
             printf("\nThread %d não criada.\n", i);
             exit(EXIT_FAILURE);
         }
@@ -72,7 +72,7 @@ int tree_skel_init(int N) {
  */
 void tree_skel_destroy() {
     for(int i = 0; i < thread_number; i++) {
-        if(pthread_join(thread+i, (void **) &r) != 0) {
+        if(pthread_join(thread[i], (void **) &r) != 0) {
             perror("\nErro no join.\n");
             exit(EXIT_FAILURE);
         }
@@ -338,7 +338,7 @@ void *thread_impressao(void *params){
 
 		process_request(params);
 		
-		printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
+		//printf("Thread %d diz: %s \n", *thread_number, "Imprimi!");
 
 	printf("Thread %d a terminar\n", *thread_number);
 

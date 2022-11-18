@@ -30,7 +30,7 @@ int read_all(int sock, void *buf, int len) {
     while (readlen < len) {
         res = read(sock, buf + readlen, len - readlen);
         if (res < 1) {
-            return res;
+            return -1;
         }
         readlen = readlen + res;
     }

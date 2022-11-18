@@ -19,6 +19,7 @@ Grupo 21:
 
 struct sockaddr_in server;
 int sockfd;
+int sim;
 void server_signal(int);
 
 /* 
@@ -40,6 +41,10 @@ int network_server_init(short port) {
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
 		perror("Erro ao criar socket");
 		return -1;
+	}
+	sim = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (int *)&sim, sizeof(sim)) < 0 ) {
+		perror("SO_REUSEADDR setsockopt error");
 	}
 	// Preenche estrutura server para bind
 	server.sin_family = AF_INET;
@@ -73,6 +78,7 @@ int network_main_loop(int listening_socket) {
 	struct sockaddr_in client;
 	socklen_t size_client;
 	struct pollfd desc_set[NFDESC];
+	//malloc para desc_Set
 	int i, nfds, kdfs;
 	for (i = 0; i < NFDESC; i++) {
 		desc_set[i].fd = -1;
@@ -80,43 +86,57 @@ int network_main_loop(int listening_socket) {
 	}
   	desc_set[0].fd = listening_socket;
   	desc_set[0].events = POLLIN;
-  	nfds = 1;
-	while ((kdfs = poll(desc_set, nfds, 10)) >= 0) {
-		if (kdfs > 0) {
-			if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
-				if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
-					desc_set[nfds].events = POLLIN;
-					nfds++;
-				}
-			}
-			for (i = 1; i < nfds; i++) {
-				if ((desc_set[i].revents & POLLIN) && desc_set[i].fd != -1) {
-					MessageT *msg = network_receive(desc_set[i].fd);
-					if (msg == NULL) {
-						close(desc_set[i].fd);
-						desc_set[i].fd = -1;
-						return -1;
-					} else {
-						invoke(msg);
-						network_send(desc_set[i].fd, msg);
+  	nfds = 1; //incrementar para 4 para suportar 4 clientes
+	//dar realloc no array para incrementar o tamanho de desc_set
+	//verificar limite do nfds
+	//ver duplos close nos fds
+		while ((kdfs = poll(desc_set, nfds, 10)) >= 0) { //falta sinal fechar servidor (ctrl + C) 
+			if (kdfs > 0) {
+				if ((desc_set[0].revents & POLLIN) && (nfds < NFDESC)) {
+					if ((desc_set[nfds].fd = accept(desc_set[0].fd, (struct sockaddr *)&client, &size_client)) > 0){
+						desc_set[nfds].events = POLLIN;
+						nfds++;
 					}
 				}
-				
-				if ((desc_set[i].revents & POLLERR) || (desc_set[i].revents & POLLHUP)) {
-					close(desc_set[i].fd);
-					desc_set[i].fd = -1;
-					return -1;
+				for (i = 1; i < nfds; i++) {
+					if ((desc_set[i].revents & POLLIN) && desc_set[i].fd != -1) {
+						MessageT *msg = network_receive(desc_set[i].fd);
+						if (msg == NULL) {
+							printf("message null");
+							fflush(stdout);
+							//close(desc_set[i].fd);
+							desc_set[i].fd = -1;
+							//return -1;
+							free(msg);
+						} else {
+							printf("message not null");
+							fflush(stdout);
+							invoke(msg);
+							network_send(desc_set[i].fd, msg);
+						}
+						//free(msg);
+					}
+					
+					if ((desc_set[i].revents & POLLERR) || (desc_set[i].revents & POLLHUP)) {
+						printf("Entrou aqui");
+						fflush(stdout);
+						close(desc_set[i].fd);
+						desc_set[i].fd = -1;
+						//return -1;
+						//printf("Entrou aqui");
+					}
+				}
+			}
+
+			for(int i = 1 ; i < nfds ;i++){
+				if(desc_set[i].fd == -1){
+					desc_set[i].fd = desc_set[nfds].fd;
+					nfds --;
 				}
 			}
 		}
-
-		for(int i = 1 ; i < nfds ;i++){
-			if(desc_set[i].fd == -1){
-				desc_set[i].fd = desc_set[nfds].fd;
-				nfds --;
-			}
-		}
-	}
+		printf("Saiu do while");
+		fflush(stdout);
 	close(listening_socket);
   	return 0;
 }
