@@ -13,6 +13,11 @@ Grupo 21:
 #include "sdmessage.pb-c.h"
 #include "tree_skel-private.h"
 #include <signal.h>
+#include <zookeeper/zookeeper.h>
+
+static char *root_path = "/chain";
+static zhandle_t *zh;
+static int is_connected;
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
@@ -326,4 +331,46 @@ int rtree_verify(struct rtree_t *rtree, int op_n) {
     printf("A operação indetificada por %d foi executada", op_n);
     return 0;
 
+}
+
+/* Função que liga o ZooKeeper.
+*/
+int zookeeper_connect_client(int host_port) {
+    zh = zookeeper_init(host_port, connection_watcher,	2000, 0, NULL, 0); 
+	if (zh == NULL)	{
+		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
+	    exit(EXIT_FAILURE);
+	}
+}
+
+/* Função que faz watch à mudança do estado da ligação.
+*/
+void connection_watcher_client(zhandle_t *zzh, int type, int state, const char *path, void* context) {
+	if (type == ZOO_SESSION_EVENT) {
+		if (state == ZOO_CONNECTED_STATE) {
+			is_connected = 1; 
+		} else {
+			is_connected = 0; 
+		}
+	} 
+}
+
+/* Função que faz watch aos filhos.
+*/
+static void child_watcher_client(zhandle_t *wzh, int type, int state, const char *zpath, void *watcher_ctx) {
+	zoo_string* children_list =	(zoo_string *) malloc(sizeof(zoo_string));
+	int zoo_data_len = ZDATALEN;
+	if (state == ZOO_CONNECTED_STATE)	 {
+		if (type == ZOO_CHILD_EVENT) {
+ 			if (ZOK != zoo_wget_children(zh, root_path, child_watcher, watcher_ctx, children_list)) {
+ 				fprintf(stderr, "Error setting watch at %s!\n", root_path);
+ 			}
+			fprintf(stderr, "\n=== znode listing === [ %s ]", root_path); 
+			for (int i = 0; i < children_list->count; i++)  {
+				fprintf(stderr, "\n(%d): %s", i+1, children_list->data[i]);
+			}
+			fprintf(stderr, "\n=== done ===\n");
+		 } 
+	 }
+	 free(children_list);
 }

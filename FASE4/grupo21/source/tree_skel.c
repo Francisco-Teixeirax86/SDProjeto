@@ -349,10 +349,19 @@ void *thread_impressao(void *params){
 	return 0;
 }
 
+/* Função que liga o ZooKeeper.
+*/
+int zookeeper_connect_server(int host_port) {
+    zh = zookeeper_init(host_port, connection_watcher,	2000, 0, NULL, 0); 
+	if (zh == NULL)	{
+		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
+	    exit(EXIT_FAILURE);
+	}
+}
 
 /* Função que faz watch à mudança do estado da ligação.
 */
-void connection_watcher(zhandle_t *zzh, int type, int state, const char *path, void* context) {
+void connection_watcher_server(zhandle_t *zzh, int type, int state, const char *path, void* context) {
 	if (type == ZOO_SESSION_EVENT) {
 		if (state == ZOO_CONNECTED_STATE) {
 			is_connected = 1; 
@@ -364,7 +373,7 @@ void connection_watcher(zhandle_t *zzh, int type, int state, const char *path, v
 
 /* Função que faz watch aos filhos.
 */
-static void child_watcher(zhandle_t *wzh, int type, int state, const char *zpath, void *watcher_ctx) {
+static void child_watcher_server(zhandle_t *wzh, int type, int state, const char *zpath, void *watcher_ctx) {
 	zoo_string* children_list =	(zoo_string *) malloc(sizeof(zoo_string));
 	int zoo_data_len = ZDATALEN;
 	if (state == ZOO_CONNECTED_STATE)	 {
