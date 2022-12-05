@@ -15,6 +15,9 @@ Grupo 21:
 #include <signal.h>
 #include <zookeeper/zookeeper.h>
 
+#define ZDATALEN 1024 * 1024
+typedef struct String_vector zoo_string; 
+
 static char *root_path = "/chain";
 static zhandle_t *zh;
 static int is_connected;
@@ -23,6 +26,7 @@ static int is_connected;
  */
 struct rtree_t *tree_c;
 void client_stub_signal(int);
+void connection_watcher_client(zhandle_t*, int, int, const char*, void*);
 
 /* 
  * Função handler que deteta e trata o sinal em caso de fecho inesperado do cliente
@@ -336,11 +340,12 @@ int rtree_verify(struct rtree_t *rtree, int op_n) {
 /* Função que liga o ZooKeeper.
 */
 int zookeeper_connect_client(int host_port) {
-    zh = zookeeper_init(host_port, connection_watcher,	2000, 0, NULL, 0); 
+    zh = zookeeper_init(host_port, connection_watcher_client,	2000, 0, NULL, 0); 
 	if (zh == NULL)	{
 		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
 	    exit(EXIT_FAILURE);
 	}
+    return 0;
 }
 
 /* Função que faz watch à mudança do estado da ligação.
@@ -362,7 +367,7 @@ static void child_watcher_client(zhandle_t *wzh, int type, int state, const char
 	int zoo_data_len = ZDATALEN;
 	if (state == ZOO_CONNECTED_STATE)	 {
 		if (type == ZOO_CHILD_EVENT) {
- 			if (ZOK != zoo_wget_children(zh, root_path, child_watcher, watcher_ctx, children_list)) {
+ 			if (ZOK != zoo_wget_children(zh, root_path, child_watcher_client, watcher_ctx, children_list)) {
  				fprintf(stderr, "Error setting watch at %s!\n", root_path);
  			}
 			fprintf(stderr, "\n=== znode listing === [ %s ]", root_path); 
