@@ -42,24 +42,25 @@ void connection_watcher_server(zhandle_t*, int, int, const char*, void*);
 * pedidos de escrita na árvore.
 * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
 */
-int tree_skel_init(int N) {  
+int tree_skel_init(int port) {  
     operation = malloc(sizeof(struct op_proc));
-    operation->in_progress = malloc(sizeof(int) * N);
-    thread_number = N;
+    operation->in_progress = malloc(sizeof(int) * 1);
+    thread_number = 1;
     if (operation == NULL) {
         free(operation->in_progress);
         free(operation);
     }
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < 1; i++) {
         operation->in_progress[i] = 0;
     } 
     operation->max_proc = 0;
     last_assigned = 1;
     queue_head = NULL;
     tree_s = tree_create();
-    int n_threads = N;
+    int n_threads = 1;
     thread = (pthread_t*) malloc(sizeof(pthread_t) * n_threads); //NAO LIBERTADO FALTA JOIN
     thread_param = malloc(sizeof(int) * n_threads); //NAO LIBERTADO FALTA JOIN
+    zookeeper_connect_server(host);
 
     printf("main() a iniciar\n");
     for (int i=0; i < n_threads; i++){
@@ -374,6 +375,41 @@ void connection_watcher_server(zhandle_t *zzh, int type, int state, const char *
 		}
 	} 
 }
+
+void create_zookeeper_child_ephemeral_sequence() {
+
+    char node_path[120] = "";
+    strcat(node_path, root_path);
+    strcat(node_path, "/node");
+    int newpath_length = 1024;
+    char* newpath = malloc(newpath_length);
+
+    if(ZOK != zoo_create(zh, node_path, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, ZOO_EPHEMERAL | ZOO_SEQUENCE, newpath, newpath_length)) {
+        printf("Erro creating znode from path %s!\n", node_path);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Ephemeral sequencial ZNode created! ZNode path: %s\n", newpath);
+}
+
+void create_zookeeper_child() {
+
+    char node_path[120] = "";
+    strcat(node_path, root_path);
+    strcat(node_path, "/node");
+    int newpath_length = 1024;
+    char* newpath = malloc(newpath_length);
+
+    if(ZOK != zoo_create(zh, node_path, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, 0, newpath, newpath_length)) {
+        printf("Erro creating znode from path %s!\n", node_path);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Ephemeral sequencial ZNode created! ZNode path: %s\n", newpath);
+
+}
+
+
 
 /* Função que faz watch aos filhos.
 */
