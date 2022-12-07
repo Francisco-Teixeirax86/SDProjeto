@@ -25,6 +25,8 @@ static int is_connected;
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
 struct rtree_t *tree_c;
+struct rtree_t *head;
+struct rtree_t *tail;
 void client_stub_signal(int);
 void connection_watcher_client(zhandle_t*, int, int, const char*, void*);
 
@@ -56,13 +58,16 @@ struct rtree_t *rtree_connect(const char *address_port) {
         return NULL;
     }
 
+
+
+
     // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
     int connect = network_connect(tree_c);
     if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
         free(tree_c);
         return NULL;
     }
-
+    zookeeper_connect_client(port);
     signal(SIGINT, client_stub_signal);
 
     return tree_c;
@@ -368,14 +373,84 @@ static void child_watcher_client(zhandle_t *wzh, int type, int state, const char
 	if (state == ZOO_CONNECTED_STATE)	 {
 		if (type == ZOO_CHILD_EVENT) {
  			if (ZOK != zoo_wget_children(zh, root_path, child_watcher_client, watcher_ctx, children_list)) {
- 				fprintf(stderr, "Error setting watch at %s!\n", root_path);
+ 				printf("Error setting watch at %s!\n", root_path);
  			}
-			fprintf(stderr, "\n=== znode listing === [ %s ]", root_path); 
+			printf("\n=== znode listing === [ %s ]", root_path); 
 			for (int i = 0; i < children_list->count; i++)  {
-				fprintf(stderr, "\n(%d): %s", i+1, children_list->data[i]);
+				printf("\n(%d): %s", i+1, children_list->data[i]);
 			}
-			fprintf(stderr, "\n=== done ===\n");
+			printf("\n=== done ===\n");
 		 } 
 	 }
 	 free(children_list);
 }
+
+
+struct rtree_t *rtree_connect_head()
+{
+  int buffer_size = 1024;
+  char* buffer = malloc (buffer_size);
+  if ( ZOK != zoo_get(zh,"/chain/node",0,buffer,&buffer_size,0)){
+    printf("error  zoo_get\n" );
+    exit(1);
+  }
+  printf("O valor do outro nó é: %s\n",buffer);
+
+  head = (struct rtree_t *) malloc(sizeof(struct rtree_t));
+  char *host = strtok((char *)buffer, ":");
+  int port = atoi(strtok(NULL,":"));
+
+  head->socket.sin_family = AF_INET;
+  head->socket.sin_port = htons(port);
+  if (inet_pton(AF_INET, host, &head->socket.sin_addr) < 1) {
+    printf("Erro ao converter IP\n");
+    close(head->sockfd);
+    return NULL;
+  }
+
+  // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
+  int connect = network_connect(head);
+  if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
+    free(head);
+    return NULL;
+  }
+  zookeeper_connect_client(port);
+  signal(SIGINT, client_stub_signal);
+
+  return head;
+};
+
+
+struct rtree_t *rtree_connect_tail()
+{
+  int buffer_size = 1024;
+  char* buffer = malloc (buffer_size);
+  if ( ZOK != zoo_get(zh,"/chain/node",0,buffer,&buffer_size,0)){
+    printf("error  zoo_get\n" );
+    exit(1);
+  }
+  printf("O valor do outro nó é: %s\n",buffer);
+
+  tail = (struct rtree_t *) malloc(sizeof(struct rtree_t));
+  char *host = strtok((char *)buffer, ":");
+  int port = atoi(strtok(NULL,":"));
+
+  tail->socket.sin_family = AF_INET;
+  tail->socket.sin_port = htons(port);
+  if (inet_pton(AF_INET, host, &tail->socket.sin_addr) < 1) {
+    printf("Erro ao converter IP\n");
+    close(tail->sockfd);
+    return NULL;
+  }
+
+  // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
+  int connect = network_connect(tail);
+  if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
+    free(tail);
+    return NULL;
+  }
+  zookeeper_connect_client(port);
+  signal(SIGINT, client_stub_signal);
+
+  return tail;
+};

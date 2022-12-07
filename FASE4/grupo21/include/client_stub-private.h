@@ -13,8 +13,6 @@ Grupo 21:
 struct rtree_t {
     struct sockaddr_in socket; //Informação pertinente ao server
     int sockfd; //Socket a usar pelo cliente
-	struct rtree_t head;
-	struct rtree_t tail;
 };
 
 #endif
