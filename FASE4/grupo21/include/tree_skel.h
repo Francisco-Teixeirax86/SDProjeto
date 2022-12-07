@@ -17,7 +17,7 @@ Grupo 21:
 * pedidos de escrita na árvore.
 * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
 */
-int tree_skel_init(int N);
+int tree_skel_init(int port);
 
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */

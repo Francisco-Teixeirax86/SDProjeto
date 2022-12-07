@@ -9,6 +9,7 @@ Grupo 21:
 #include "sdmessage.pb-c.h"
 #include "tree.h"
 #include "entry.h"
+#include <netdb.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <zookeeper/zookeeper.h>
@@ -16,9 +17,12 @@ Grupo 21:
 #define ZDATALEN 1024 * 1024
 typedef struct String_vector zoo_string; 
 
+struct rtree_t* next_server;
 static char *root_path = "/chain";
-static zhandle_t *zh;
-static int is_connected;
+
+char hbuffer[256];
+struct hostent *hostent_s;
+char *ipbuffer;
 
 struct tree_t *tree_s;
 struct op_proc *operation;
@@ -357,11 +361,17 @@ void *thread_impressao(void *params){
 /* Função que liga o ZooKeeper.
 */
 int zookeeper_connect_server(int host_port) {
-    zh = zookeeper_init(host_port, connection_watcher_server,	2000, 0, NULL, 0); 
-	if (zh == NULL)	{
+    next_server->zh = zookeeper_init(host_port, connection_watcher_server,	2000, 0, NULL, 0); 
+	if (next_server->zh == NULL)	{
 		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
 	    exit(EXIT_FAILURE);
 	}
+
+    int h_name = gethostname(hbuffer, sizeof(hbuffer));
+    hostent_s = gethostbyname(hbuffer);
+    ipbuffer = inet_ntoa(*((struct in_addr *) hostent_s->h_addr_list[0])); 
+    strcat(ipbuffer,":");
+    strcat(ipbuffer, host_port);
     return 0;
 }
 
@@ -370,9 +380,9 @@ int zookeeper_connect_server(int host_port) {
 void connection_watcher_server(zhandle_t *zzh, int type, int state, const char *path, void* context) {
 	if (type == ZOO_SESSION_EVENT) {
 		if (state == ZOO_CONNECTED_STATE) {
-			is_connected = 1; 
+			next_server->is_connected = 1; 
 		} else {
-			is_connected = 0; 
+			next_server->is_connected = 0; 
 		}
 	} 
 }
@@ -384,7 +394,7 @@ void create_zookeeper_child_ephemeral_sequence() {
     int newpath_length = 1024;
     char* newpath = malloc(newpath_length);
 
-    if(ZOK != zoo_create(zh, node_path, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, ZOO_EPHEMERAL | ZOO_SEQUENCE, newpath, newpath_length)) {
+    if(ZOK != zoo_create(next_server->zh, node_path, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, ZOO_EPHEMERAL | ZOO_SEQUENCE, newpath, newpath_length)) {
         printf("Erro creating znode from path %s!\n", node_path);
         exit(EXIT_FAILURE);
     }
@@ -398,12 +408,14 @@ void create_zookeeper_child() {
     strcat(node_path, "/node");
     int newpath_length = 1024;
     char* newpath = malloc(newpath_length);
+    char* znode_id = malloc(newpath_length);
 
-    if(ZOK != zoo_create(zh, node_path, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, 0, newpath, newpath_length)) {
+    if(ZOK != zoo_create(next_server->zh, node_path, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, 0, newpath, newpath_length)) {
         printf("Erro creating znode from path %s!\n", node_path);
         exit(EXIT_FAILURE);
     }
-    printf("Ephemeral sequencial ZNode created! ZNode path: %s\n", newpath);
+    znode_id = newpath;
+    printf("ZNode created! ZNode path: %s\n", znode_id);
 }
 
 
@@ -415,7 +427,7 @@ static void child_watcher_server(zhandle_t *wzh, int type, int state, const char
 	int zoo_data_len = ZDATALEN;
 	if (state == ZOO_CONNECTED_STATE)	 {
 		if (type == ZOO_CHILD_EVENT) {
- 			if (ZOK != zoo_wget_children(zh, root_path, child_watcher_server, watcher_ctx, children_list)) {
+ 			if (ZOK != zoo_wget_children(next_server->zh, root_path, child_watcher_server, watcher_ctx, children_list)) {
  				fprintf(stderr, "Error setting watch at %s!\n", root_path);
  			}
 			fprintf(stderr, "\n=== znode listing === [ %s ]", root_path); 

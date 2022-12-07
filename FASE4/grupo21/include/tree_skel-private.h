@@ -10,6 +10,7 @@ Grupo 21:
 #include "sdmessage.pb-c.h"
 #include "tree.h"
 #include "sdmessage.pb-c.h"
+#include <zookeeper/zookeeper.h>
 
 
 struct op_proc {
@@ -25,6 +26,11 @@ struct request_t {
 	int datasize;
 	struct request_t *next_request;
 //adicionar campo(s) necessário(s) para implementar fila do tipo produtor/consumidor
+};
+
+struct rtree_t {
+	zhandle_t *zh;
+	int is_connected;
 };
 
 

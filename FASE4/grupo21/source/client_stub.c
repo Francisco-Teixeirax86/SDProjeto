@@ -11,7 +11,6 @@ Grupo 21:
 #include "entry.h"
 #include "network_client.h"
 #include "sdmessage.pb-c.h"
-#include "tree_skel-private.h"
 #include <signal.h>
 #include <zookeeper/zookeeper.h>
 
