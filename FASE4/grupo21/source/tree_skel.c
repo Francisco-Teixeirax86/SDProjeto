@@ -42,7 +42,7 @@ void connection_watcher_server(zhandle_t*, int, int, const char*, void*);
 * pedidos de escrita na árvore.
 * Retorna 0 (OK) ou -1 (erro, por exemplo OUT OF MEMORY)
 */
-int tree_skel_init(int port) {  
+int tree_skel_init(int port) {   //PODE-SE MUDAR O PARÂMETRO AQUI?
     operation = malloc(sizeof(struct op_proc));
     operation->in_progress = malloc(sizeof(int) * 1);
     thread_number = 1;
@@ -60,7 +60,7 @@ int tree_skel_init(int port) {
     int n_threads = 1;
     thread = (pthread_t*) malloc(sizeof(pthread_t) * n_threads); //NAO LIBERTADO FALTA JOIN
     thread_param = malloc(sizeof(int) * n_threads); //NAO LIBERTADO FALTA JOIN
-    zookeeper_connect_server(host);
+    zookeeper_connect_server(port);
 
     printf("main() a iniciar\n");
     for (int i=0; i < n_threads; i++){
@@ -362,6 +362,7 @@ int zookeeper_connect_server(int host_port) {
 		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
 	    exit(EXIT_FAILURE);
 	}
+    return 0;
 }
 
 /* Função que faz watch à mudança do estado da ligação.
@@ -377,7 +378,6 @@ void connection_watcher_server(zhandle_t *zzh, int type, int state, const char *
 }
 
 void create_zookeeper_child_ephemeral_sequence() {
-
     char node_path[120] = "";
     strcat(node_path, root_path);
     strcat(node_path, "/node");
@@ -393,7 +393,6 @@ void create_zookeeper_child_ephemeral_sequence() {
 }
 
 void create_zookeeper_child() {
-
     char node_path[120] = "";
     strcat(node_path, root_path);
     strcat(node_path, "/node");
@@ -404,9 +403,7 @@ void create_zookeeper_child() {
         printf("Erro creating znode from path %s!\n", node_path);
         exit(EXIT_FAILURE);
     }
-
     printf("Ephemeral sequencial ZNode created! ZNode path: %s\n", newpath);
-
 }
 
 

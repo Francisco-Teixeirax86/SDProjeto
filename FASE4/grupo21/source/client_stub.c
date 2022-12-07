@@ -57,10 +57,6 @@ struct rtree_t *rtree_connect(const char *address_port) {
         close(tree_c->sockfd);
         return NULL;
     }
-
-
-
-
     // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
     int connect = network_connect(tree_c);
     if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
@@ -389,17 +385,15 @@ static void child_watcher_client(zhandle_t *wzh, int type, int state, const char
 struct rtree_t *rtree_connect_head()
 {
   int buffer_size = 1024;
-  char* buffer = malloc (buffer_size);
-  if ( ZOK != zoo_get(zh,"/chain/node",0,buffer,&buffer_size,0)){
-    printf("error  zoo_get\n" );
+  char *buffer = malloc(buffer_size);
+  if (ZOK != zoo_get(zh, "/chain/node", 0, buffer, &buffer_size, 0)) {
+    printf("Erro no zoo_get.\n");
     exit(1);
   }
-  printf("O valor do outro nó é: %s\n",buffer);
-
+  printf("O valor do outro nó é: %s\n", buffer);
   head = (struct rtree_t *) malloc(sizeof(struct rtree_t));
   char *host = strtok((char *)buffer, ":");
-  int port = atoi(strtok(NULL,":"));
-
+  int port = atoi(strtok(NULL, ":"));
   head->socket.sin_family = AF_INET;
   head->socket.sin_port = htons(port);
   if (inet_pton(AF_INET, host, &head->socket.sin_addr) < 1) {
@@ -407,7 +401,6 @@ struct rtree_t *rtree_connect_head()
     close(head->sockfd);
     return NULL;
   }
-
   // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
   int connect = network_connect(head);
   if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
@@ -424,17 +417,15 @@ struct rtree_t *rtree_connect_head()
 struct rtree_t *rtree_connect_tail()
 {
   int buffer_size = 1024;
-  char* buffer = malloc (buffer_size);
-  if ( ZOK != zoo_get(zh,"/chain/node",0,buffer,&buffer_size,0)){
-    printf("error  zoo_get\n" );
+  char *buffer = malloc(buffer_size);
+  if (ZOK != zoo_get(zh, "/chain/node", 0, buffer, &buffer_size, 0)) {
+    printf("Erro no zoo_get.\n");
     exit(1);
   }
-  printf("O valor do outro nó é: %s\n",buffer);
-
+  printf("O valor do outro nó é: %s\n", buffer);
   tail = (struct rtree_t *) malloc(sizeof(struct rtree_t));
   char *host = strtok((char *)buffer, ":");
-  int port = atoi(strtok(NULL,":"));
-
+  int port = atoi(strtok(NULL, ":"));
   tail->socket.sin_family = AF_INET;
   tail->socket.sin_port = htons(port);
   if (inet_pton(AF_INET, host, &tail->socket.sin_addr) < 1) {
@@ -442,7 +433,6 @@ struct rtree_t *rtree_connect_tail()
     close(tail->sockfd);
     return NULL;
   }
-
   // Estabelece conexão com o servidor definido em server (a socket é criada em network_client)
   int connect = network_connect(tail);
   if(connect == -1) { //Verificar se a conexão foi bem sucedida em network_connect
