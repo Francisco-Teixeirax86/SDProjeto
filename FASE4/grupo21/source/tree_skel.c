@@ -25,6 +25,7 @@ struct hostent *hostent_s;
 char *ipbuffer;
 
 struct tree_t *tree_s;
+zoo_string* children_list;
 struct op_proc *operation;
 int last_assigned;
 struct request_t *queue_head;
@@ -358,23 +359,6 @@ void *thread_impressao(void *params){
 	return 0;
 }
 
-/* Função que liga o ZooKeeper.
-*/
-int zookeeper_connect_server(int host_port) {
-    next_server->zh = zookeeper_init(host_port, connection_watcher_server,	2000, 0, NULL, 0); 
-	if (next_server->zh == NULL)	{
-		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
-	    exit(EXIT_FAILURE);
-	}
-
-    int h_name = gethostname(hbuffer, sizeof(hbuffer));
-    hostent_s = gethostbyname(hbuffer);
-    ipbuffer = inet_ntoa(*((struct in_addr *) hostent_s->h_addr_list[0])); 
-    strcat(ipbuffer,":");
-    strcat(ipbuffer, host_port);
-    return 0;
-}
-
 /* Função que faz watch à mudança do estado da ligação.
 */
 void connection_watcher_server(zhandle_t *zzh, int type, int state, const char *path, void* context) {
@@ -423,7 +407,7 @@ void create_zookeeper_child() {
 /* Função que faz watch aos filhos.
 */
 static void child_watcher_server(zhandle_t *wzh, int type, int state, const char *zpath, void *watcher_ctx) {
-	zoo_string* children_list =	(zoo_string *) malloc(sizeof(zoo_string));
+	children_list =	(zoo_string *) malloc(sizeof(zoo_string));
 	int zoo_data_len = ZDATALEN;
 	if (state == ZOO_CONNECTED_STATE)	 {
 		if (type == ZOO_CHILD_EVENT) {
@@ -438,4 +422,47 @@ static void child_watcher_server(zhandle_t *wzh, int type, int state, const char
 		 } 
 	 }
 	 free(children_list);
+}
+
+/* Função que liga o ZooKeeper.
+*/
+int zookeeper_connect_server(int host_port) {
+    next_server->zh = zookeeper_init(host_port, connection_watcher_server,	2000, 0, NULL, 0); 
+	if (next_server->zh == NULL)	{
+		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
+	    exit(EXIT_FAILURE);
+	}
+
+    int h_name = gethostname(hbuffer, sizeof(hbuffer));
+    hostent_s = gethostbyname(hbuffer);
+    ipbuffer = inet_ntoa(*((struct in_addr *) hostent_s->h_addr_list[0])); 
+    strcat(ipbuffer,":");
+    strcat(ipbuffer, host_port);
+    return 0;
+}
+
+int connect_zookeeper(char *IP, char * port) {
+
+    int retval;
+
+    zookeeper_connect_server(port);
+
+    if(next_server->is_connected) {
+
+        if(ZNONODE == zoo_exists(next_server->zh, root_path, 0, NULL)) {
+            printf("Ocorrue um erro, o node ainda não existe");
+
+            if(ZOK == zoo_create(next_server->zh, root_path, NULL, -1, &ZOO_OPEN_ACL_UNSAFE, 0, NULL, 0) ){
+                printf("O node foi cirado");
+            }else{
+                printf("Erro ao criar o node");
+                free(next_server);
+                return -1;
+            }
+        }
+
+    }
+    
+
+
 }
