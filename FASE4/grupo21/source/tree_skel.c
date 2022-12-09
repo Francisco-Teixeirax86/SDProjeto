@@ -433,8 +433,9 @@ static void child_watcher_server(zhandle_t *wzh, int type, int state, const char
             int next_name = gethostname(hnextbuffer, sizeof(hnextbuffer));
             hostent_next = gethostbyname(hnextbuffer);
             nextipbuffer = inet_ntoa(*((struct in_addr *) hostent_next->h_addr_list[0])); 
-            strcat(nextipbuffer,":");
-            strcat(nextipbuffer, next_port);
+            //strcat(nextipbuffer,":");
+            //strcat(nextipbuffer, next_port);
+            next_server->socket.sin_addr = *(struct in_addr *) nextipbuffer;
 			fprintf(stderr, "\n=== done ===\n");
 		 } 
 	 }

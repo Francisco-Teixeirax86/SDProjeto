@@ -11,6 +11,7 @@ Grupo 21:
 #include "entry.h"
 #include "network_client.h"
 #include "sdmessage.pb-c.h"
+#include <netdb.h>
 #include <signal.h>
 #include <zookeeper/zookeeper.h>
 
@@ -20,6 +21,8 @@ typedef struct String_vector zoo_string;
 static char *root_path = "/chain";
 static zhandle_t *zh;
 static int is_connected;
+
+int lowest_node_len = 1024;
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
@@ -371,9 +374,63 @@ static void child_watcher_client(zhandle_t *wzh, int type, int state, const char
  				printf("Error setting watch at %s!\n", root_path);
  			}
 			printf("\n=== znode listing === [ %s ]", root_path); 
+			char* lowest_node = malloc(lowest_node_len);
+            char* lastdigit = lowest_node[strlen(lowest_node) - 1];
+            int lowest_node_num = atoi(lastdigit);
+            int* lastd = malloc(children_list->count);
+            char* highest_node = malloc(lowest_node_len);
+            int highest_node_num = atoi(lastdigit);
+            //
+            char hlowestbuffer[256];
+            struct hostent *hostent_lowest;
+            char *lowestipbuffer;
+            int lowest_port;
+            //
+            char hhighestbuffer[256];
+            struct hostent *hostent_highest;
+            char *highestipbuffer;
+            int highest_port;
+            ///
 			for (int i = 0; i < children_list->count; i++)  {
-				printf("\n(%d): %s", i+1, children_list->data[i]);
-			}
+                lastd[i] = atoi(children_list->data[i][strlen(children_list->data) - 1]);
+                lowest_node_num = lastd[0];
+                for (i = 0; i < sizeof(lastd); i++) {
+                    if (lastd[i] < lowest_node_num) {
+                        lowest_node_num = lastd[i];
+                    }
+                }
+                for (int i = 0; i < children_list->count; i++)  {
+                            if (lowest_node_num == atoi(children_list->data[i][strlen(children_list->data) - 1])) {
+                                lowest_node = children_list->data[i];
+                            }
+                }
+                //
+                highest_node_num = lastd[0];
+                for (i = 0; i < sizeof(lastd); i++) {
+                    if (highest_node_num < lastd[i]) {
+                        highest_node_num = lastd[i];
+                    }
+                }
+                for (int i = 0; i < children_list->count; i++)  {
+                            if (highest_node_num == atoi(children_list->data[i][strlen(children_list->data) - 1])) {
+                                highest_node = children_list->data[i];
+                            }
+                }
+				fprintf(stderr, "\n(%d): %s", i+1, children_list->data[i]);
+            }
+            int lowest_name = gethostname(hlowestbuffer, sizeof(hlowestbuffer));
+            hostent_lowest = gethostbyname(hlowestbuffer);
+            lowestipbuffer = inet_ntoa(*((struct in_addr *) hostent_lowest->h_addr_list[0])); 
+            //strcat(lowestipbuffer,":");
+            //strcat(lowestipbuffer, lowest_port);
+            head->socket.sin_addr = *(struct in_addr *) lowestipbuffer;
+            //
+            int highest_name = gethostname(hhighestbuffer, sizeof(hhighestbuffer));
+            hostent_highest = gethostbyname(hhighestbuffer);
+            highestipbuffer = inet_ntoa(*((struct in_addr *) hostent_highest->h_addr_list[0])); 
+            //strcat(highestipbuffer,":");
+            //strcat(highestipbuffer, highest_port);
+            tail->socket.sin_addr = *(struct in_addr *) highestipbuffer;
 			printf("\n=== done ===\n");
 		 } 
 	 }

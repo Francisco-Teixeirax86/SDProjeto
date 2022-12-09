@@ -31,6 +31,9 @@ struct request_t {
 struct rtree_t {
 	zhandle_t *zh;
 	int is_connected;
+
+	struct sockaddr_in socket; //Informação pertinente ao server
+    int sockfd; //Socket a usar pelo cliente
 };
 
 
