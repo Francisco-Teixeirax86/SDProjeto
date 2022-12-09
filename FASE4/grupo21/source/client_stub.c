@@ -117,7 +117,7 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry) {
     msg->opcode = MESSAGE_T__OPCODE__OP_PUT;
     msg->c_type = MESSAGE_T__C_TYPE__CT_ENTRY;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg);
+    MessageT *responseMsg = network_send_receive(head, msg);
     if(responseMsg == NULL) {
         return -1;
     }
@@ -161,7 +161,7 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key) {
     msg->opcode = MESSAGE_T__OPCODE__OP_GET;
     msg->c_type = MESSAGE_T__C_TYPE__CT_KEY;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg);
+    MessageT *responseMsg = network_send_receive(tail, msg);
     if(responseMsg == NULL) {
         return NULL;
     }
@@ -197,7 +197,7 @@ int rtree_del(struct rtree_t *rtree, char *key) {
     msg->opcode = MESSAGE_T__OPCODE__OP_DEL;
     msg->c_type = MESSAGE_T__C_TYPE__CT_KEY;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg);
+    MessageT *responseMsg = network_send_receive(head, msg);
     if(responseMsg->opcode != MESSAGE_T__OPCODE__OP_ERROR) {
         printf("O comando del com número de operação %d será executado em breve", responseMsg->size);
         printf("\n");
@@ -225,7 +225,7 @@ int rtree_size(struct rtree_t *rtree) {
     msg->opcode = MESSAGE_T__OPCODE__OP_SIZE;
     msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg); 
+    MessageT *responseMsg = network_send_receive(tail, msg); 
     if(responseMsg == NULL) {
         return -1;
     }
@@ -252,7 +252,7 @@ int rtree_height(struct rtree_t *rtree) {
     msg->opcode = MESSAGE_T__OPCODE__OP_HEIGHT;
     msg->c_type = MESSAGE_T__C_TYPE__CT_NONE;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg);
+    MessageT *responseMsg = network_send_receive(tail, msg);
     if(responseMsg == NULL) {
         return -1;
     }
@@ -282,7 +282,7 @@ char **rtree_get_keys(struct rtree_t *rtree) {
     msg->keys = NULL;
     msg->size = 0;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg); 
+    MessageT *responseMsg = network_send_receive(tail, msg); 
     if(responseMsg == NULL) {
         free(msg);
         free(responseMsg);
@@ -326,7 +326,7 @@ int rtree_verify(struct rtree_t *rtree, int op_n) {
     msg->c_type = MESSAGE_T__C_TYPE__CT_RESULT;
     msg->size = op_n;
 
-    MessageT *responseMsg = network_send_receive(rtree, msg); 
+    MessageT *responseMsg = network_send_receive(tail, msg); 
 
     if(responseMsg == NULL) {
         printf("Existe um erro na verificação da operação ou  a operação ainda não foi concluída");
