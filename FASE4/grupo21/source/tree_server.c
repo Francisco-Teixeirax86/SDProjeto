@@ -19,14 +19,15 @@ int main(int argc, char *argv[]) {
 		printf("\n");
 		return -1;
 	}
-	int IP = atoi(strtok((char *) argv[1], ":"));
-	int port = atoi(strtok(NULL,":"));
+	char* IP = strtok((char *) argv[1], ":");
+	char* port = strtok(NULL,":");
 	
 	int socket = network_server_init(port);
 	if(socket == -1) {
 		printf("Ocorreu um erro ao criar o server");
 	}
-	tree_skel_init(argv[1]);
+	tree_skel_init(atoi(argv[1]));
+	zookeeper_connect_server(argv[1], port);
 	network_main_loop(socket);
 	network_server_close();
 	tree_skel_destroy();

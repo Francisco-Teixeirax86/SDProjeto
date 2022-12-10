@@ -65,7 +65,7 @@ struct rtree_t *rtree_connect(const char *address_port) {
         free(tree_c);
         return NULL;
     }
-    zookeeper_connect_client(port);
+    zookeeper_connect_client(host, port);
     signal(SIGINT, client_stub_signal);
 
     return tree_c;
@@ -342,8 +342,8 @@ int rtree_verify(struct rtree_t *rtree, int op_n) {
 
 /* Função que liga o ZooKeeper.
 */
-int zookeeper_connect_client(int host_port) {
-    zh = zookeeper_init(host_port, connection_watcher_client,	2000, 0, NULL, 0); 
+int zookeeper_connect_client(const char* address, int host_port) {
+    zh = zookeeper_init(address, connection_watcher_client,	2000, 0, NULL, 0); 
 	if (zh == NULL)	{
 		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
 	    exit(EXIT_FAILURE);
@@ -463,7 +463,7 @@ struct rtree_t *rtree_connect_head()
     free(head);
     return NULL;
   }
-  zookeeper_connect_client(port);
+  zookeeper_connect_client(host, port);
   signal(SIGINT, client_stub_signal);
 
   return head;
@@ -495,7 +495,7 @@ struct rtree_t *rtree_connect_tail()
     free(tail);
     return NULL;
   }
-  zookeeper_connect_client(port);
+  zookeeper_connect_client(host, port);
   signal(SIGINT, client_stub_signal);
 
   return tail;

@@ -41,6 +41,7 @@ int thread_number;
 int *r;
 int verify(int);
 void connection_watcher_server(zhandle_t*, int, int, const char*, void*);
+int zookeeper_connect_server(const char*, int);
 
 
 /* Inicia o skeleton da árvore.
@@ -68,7 +69,6 @@ int tree_skel_init(int port) {   //PODE-SE MUDAR O PARÂMETRO AQUI?
     int n_threads = 1;
     thread = (pthread_t*) malloc(sizeof(pthread_t) * n_threads); //NAO LIBERTADO FALTA JOIN
     thread_param = malloc(sizeof(int) * n_threads); //NAO LIBERTADO FALTA JOIN
-    zookeeper_connect_server(port);
 
     printf("main() a iniciar\n");
     for (int i=0; i < n_threads; i++){
@@ -444,24 +444,28 @@ static void child_watcher_server(zhandle_t *wzh, int type, int state, const char
 
 /* Função que liga o ZooKeeper.
 */
-int zookeeper_connect_server(int host_port) {
-    next_server->zh = zookeeper_init(host_port, connection_watcher_server,	2000, 0, NULL, 0); 
+int zookeeper_connect_server(const char* address, int host_port) {
+    next_server = (struct rtree_t *) malloc(sizeof(struct rtree_t));
+    next_server->zh = zookeeper_init(address, connection_watcher_server, 2000, 0, NULL, 0); 
 	if (next_server->zh == NULL)	{
 		fprintf(stderr, "Error connecting to ZooKeeper server!\n");
 	    exit(EXIT_FAILURE);
 	}
+    sleep(3);
 
+    char* port = malloc(256);
     int h_name = gethostname(hbuffer, sizeof(hbuffer));
     hostent_s = gethostbyname(hbuffer);
     ipbuffer = inet_ntoa(*((struct in_addr *) hostent_s->h_addr_list[0])); 
     strcat(ipbuffer,":");
-    strcat(ipbuffer, host_port);
+    sprintf(port, "%d", host_port);
+    strcat(ipbuffer, port);
     return 0;
 }
 
 int connect_zookeeper(char *IP, char * port) {
     int retval;
-    zookeeper_connect_server(port);
+    zookeeper_connect_server(IP, atoi(port));
     if(next_server->is_connected) {
         if(ZNONODE == zoo_exists(next_server->zh, root_path, 0, NULL)) {
             printf("Ocorrue um erro, o node ainda não existe");
